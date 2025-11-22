@@ -1,25 +1,32 @@
 import express from 'express';
-import configureViewEngine from './config/viewEngine.js';
-import initWebRoutes from './routes/web.js';
-import 'dotenv/config';
+import cors from 'cors';
 import bodyParser from 'body-parser';
-
-
+import 'dotenv/config';
+import db from './models/index.js';
+import routes from './routes/index.js';
 
 const app = express();
+const PORT = process.env.PORT || 8080;
 
-
-//config view engine
-configureViewEngine(app);
-
-//config body-parser
+// Middleware
+app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
-//init web routes
-initWebRoutes(app);
+// Routes
+app.use('/api', routes);
 
-const PORT = process.env.PORT || 8080
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}` + PORT);
-})
+db.sequelize.sync({alter: true})
+    .then(() => {
+        console.log("Database synced successfully."); 
+
+        app.listen(PORT, () => {
+            console.log('Employee Management System started!');
+        });
+    })
+    .catch(err => {
+        console.error("Failed to sync database:", err.message);
+    });
+
+export default app;
