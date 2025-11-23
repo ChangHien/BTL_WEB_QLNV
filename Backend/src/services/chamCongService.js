@@ -58,7 +58,6 @@ export const getChamCongByMaNv = async (ma_nhan_vien, thang, nam, userRole, curr
     
     const startDate = moment([nam, thang - 1]).startOf('month').format('YYYY-MM-DD');
     const endDate = moment([nam, thang - 1]).endOf('month').format('YYYY-MM-DD');
-
     const records = await ChamCong.findAll({
         where: {
             ma_nhan_vien,

@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node src/server.js"
+    "start": "nodemon --exec babel-node src/server.js",
+    "hash:tool": "babel-node src/test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  
   "dependencies": {
     "axios": "^1.13.2",
     "bcryptjs": "3.0.3",

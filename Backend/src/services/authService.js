@@ -39,7 +39,7 @@ export const verifyUser = async (username, password) => {
 }
 //Ham tao tai khoan moi (chi Admin/HR)
 export const registerUser = async (username, password, ma_nhan_vien, role) => {
-    const hashedPassword = bcrypt.hashSync (password, 8);
+    const hashedPassword = bcrypt.hashSync (password, 10);
     const newAccount = await TaiKhoan.create ({
         username, 
         password: hashedPassword,

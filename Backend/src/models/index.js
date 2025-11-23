@@ -36,3 +36,4 @@ db.NhanVien.hasMany(db.BangLuong, { foreignKey: 'ma_nhan_vien', as: 'bangLuongs'
 db.NhanVien.hasOne(db.TaiKhoan, { foreignKey: 'ma_nhan_vien', as: 'taiKhoan' });
 
 export default db;
+

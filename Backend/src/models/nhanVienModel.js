@@ -15,8 +15,12 @@ const NhanVienModel = (sequelize, DataTypes) => {
     muc_luong_co_ban: {
       type: DataTypes.DECIMAL(12, 2), allowNull: false
     },
+    ngay_vao_lam: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    },
     trang_thai: {
-      type: DataTypes.ENUM('DangLam', 'DaNghi', 'TamAn'), 
+      type: DataTypes.ENUM('DangLam', 'DaNghi'), 
       defaultValue: 'DangLam'
     }
   }, { tableName: 'NhanVien', timestamps: false });

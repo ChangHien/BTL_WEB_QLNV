@@ -8,6 +8,14 @@ const PhongBanModel = (sequelize, DataTypes) => {
     ten_phong: {
       type: DataTypes.STRING(50),
       allowNull: false
+    },
+    nam_thanh_lap: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    trang_thai: {
+      type: DataTypes.ENUM('HoatDong', 'NgungHoatDong'),
+      defaultValue: 'HoatDong'
     }
   }, {
     tableName: 'PhongBan',
