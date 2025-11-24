@@ -2,6 +2,7 @@
 Nhánh này bao gồm:
 - Foundation Tasks: Thiết lập cấu trúc thư mục, layout chính, routing, API client, authentication.
 - Feature Tasks: Quản lý Phòng ban, Chức vụ, Tính lương và Báo cáo thu nhập.
+  
 📂 Cấu trúc thư mục
 src/
  ├── api/
