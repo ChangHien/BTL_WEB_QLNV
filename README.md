@@ -33,6 +33,9 @@ src/
  │    └── AppRoutes.jsx
  │
  └── App.jsx
+
+
+ 
 ⚙️ Foundation Tasks
 - Cấu trúc thư mục: Tạo các thư mục api, components, pages, routes, hooks.
 - Layout chính:
@@ -46,6 +49,8 @@ src/
 - Authentication:
 - LoginPage.jsx để đăng nhập.
 - AuthContext.jsx quản lý token và trạng thái đăng nhập.
+
+  
 🛠️ Feature Tasks – Quản lý Tổ chức & Lương
 1. CRUD Phòng ban
 - UI: PhongBanPage.jsx (Bảng danh sách, Modal thêm/sửa).
