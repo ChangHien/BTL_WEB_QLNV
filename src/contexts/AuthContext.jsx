@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axiosClient from '../api/axiosClient'; // <-- Đảm bảo dòng này đúng
-
+import axiosClient from '../api/axiosClient'; 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -22,7 +21,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // 2. LOGIN THẬT (Gọi API)
+  // 2. LOGIN 
   const login = async (username, password) => {
     try {
       // Gọi API xuống Backend
@@ -31,10 +30,10 @@ export const AuthProvider = ({ children }) => {
         password
       });
 
-      // Lấy token thật từ Backend (Nó sẽ rất dài và loằng ngoằng)
+      // Lấy token thật từ Backend 
       const { token, user } = response.data;
 
-      // Lưu token thật
+      // Lưu token 
       localStorage.setItem('user_token', token);
       localStorage.setItem('user_info', JSON.stringify(user));
       setUser(user);

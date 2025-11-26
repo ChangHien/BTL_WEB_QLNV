@@ -6,23 +6,23 @@ import dayjs from 'dayjs';
 
 const TinhLuongPage = () => {
   const [loading, setLoading] = useState(false);
-  const [ketQua, setKetQua] = useState(null); // Lưu kết quả trả về từ BE
+  const [ketQua, setKetQua] = useState(null); 
 
   const onFinish = async (values) => {
     setLoading(true);
-    setKetQua(null); // Reset kết quả cũ
+    setKetQua(null); 
     try {
-      // 1. Chuẩn bị dữ liệu gửi đi
+      //1.Chuẩn bị dữ liệu gửi đi
       const payload = {
         ma_nhan_vien: values.ma_nhan_vien,
-        thang: values.thang_nam.month() + 1, // dayjs tính tháng từ 0-11 nên phải +1
+        thang: values.thang_nam.month() + 1, 
         nam: values.thang_nam.year()
       };
 
-      // 2. Gọi API thật
+      //2.Gọi API
       const res = await luongApi.tinhLuong(payload);
       
-      // 3. Hiển thị kết quả
+      //3 Hiển thị kết quả
       message.success(res.data.message);
       setKetQua(res.data.data);
       

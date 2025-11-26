@@ -12,12 +12,12 @@ const LoginPage = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      
+
       const success = await login(values.username, values.password);
-      
+
       if (success) {
         message.success('Đăng nhập thành công!');
-        navigate('/'); 
+        navigate('/');
       }
     } catch (error) {
       message.error('Đăng nhập thất bại (lỗi giả lập)!');
@@ -27,34 +27,34 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5' }}>
-      <Card title="Đăng nhập Hệ thống QLNV" style={{ width: 400 }}>
-        <Form
-          name="login_form"
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-        >
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: 'Vui lòng nhập Tên đăng nhập!' }]}
+      <div className="login-container">
+        <Card title="Đăng nhập Hệ thống QLNV" style={{ width: 400 }}>
+          <Form
+            name="login_form"
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
           >
-            <Input prefix={<UserOutlined />} placeholder="Tên đăng nhập" />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: 'Vui lòng nhập Mật khẩu!' }]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
-          </Form.Item>
-          
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} style={{ width: '100%' }}>
-              Đăng nhập
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
-    </div>
+            <Form.Item
+              name="username"
+              rules={[{ required: true, message: 'Vui lòng nhập Tên đăng nhập!' }]}
+            >
+              <Input prefix={<UserOutlined />} placeholder="Tên đăng nhập" />
+            </Form.Item>
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: 'Vui lòng nhập Mật khẩu!' }]}
+            >
+              <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} style={{ width: '100%' }}>
+                Đăng nhập
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
+      </div>
   );
 };
 
