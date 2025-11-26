@@ -9,8 +9,8 @@ import {
 import dayjs from 'dayjs'; 
 
 import nhanVienApi from '../../../api/nhanVienApi';
-// import phongBanApi from '../../../api/phongBanApi';
-// import chucVuApi from '../../../api/chucVuApi';
+import phongBanApi from '../../../api/phongBanApi';
+import chucVuApi from '../../../api/chucVuApi';
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -39,12 +39,14 @@ const AdminDashboard = () => {
 
         try {
             const resPB = await phongBanApi.getAll();
-            listPB = resPB.data.data || [];
+            // Kiểm tra: Nếu là mảng thì lấy luôn, nếu không thì tìm trong .data
+            listPB = Array.isArray(resPB.data) ? resPB.data : (resPB.data.data || []);
         } catch (e) { console.warn("Lỗi PB", e); }
 
         try {
             const resCV = await chucVuApi.getAll();
-            listCV = resCV.data.data || [];
+            // Kiểm tra tương tự
+            listCV = Array.isArray(resCV.data) ? resCV.data : (resCV.data.data || []);
         } catch (e) { console.warn("Lỗi CV", e); }
 
         //2. CẬP NHẬT SỐ LIỆU TỔNG QUAN
