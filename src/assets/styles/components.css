@@ -1,0 +1,56 @@
+/* src/assets/styles/components.css */
+
+/* Card: Nổi lên khi hover */
+.ant-card {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+.ant-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Table */
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background: #fafafa !important;
+  font-weight: 700;
+  color: #444;
+}
+.ant-table-tbody > tr:hover > td {
+  background: #e6f7ff !important;
+}
+
+/* Sidebar & Logo */
+.ant-layout-sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+.ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
+  background-color: #1890ff !important;
+  font-weight: 600;
+}
+.logo {
+  transition: all 0.3s;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  color: white;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(45deg, #1890ff, #69c0ff) !important;
+}
+
+/* Header */
+.ant-layout-header {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  z-index: 9;
+}
+
+/* Button: Hiệu ứng nảy */
+.ant-btn {
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.ant-btn:active {
+  transform: scale(0.95);
+}
