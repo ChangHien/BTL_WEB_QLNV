@@ -1,6 +1,5 @@
-/* src/assets/styles/components.css */
 
-/* Card: Nổi lên khi hover */
+/* Card */
 .ant-card {
   border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -47,7 +46,7 @@
   z-index: 9;
 }
 
-/* Button: Hiệu ứng nảy */
+/* Button */
 .ant-btn {
   transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }

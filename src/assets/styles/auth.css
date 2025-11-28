@@ -1,5 +1,3 @@
-/* src/assets/styles/auth.css */
-
 /* Ô nhập liệu Username */
 input.netflix-input {
   background-color: rgba(0, 0, 0, 0.6) !important;
@@ -9,7 +7,7 @@ input.netflix-input {
   height: 50px !important;
 }
 
-/* Ô nhập liệu Password (Wrapper) */
+/* Ô nhập liệu Password  */
 .netflix-input.ant-input-password {
   background-color: rgba(0, 0, 0, 0.6) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -41,7 +39,6 @@ input.netflix-input:focus,
 .ant-input-password-icon { color: #bfbfbf !important; }
 .ant-input-password-icon:hover { color: #fff !important; }
 
-/* Fix lỗi Autofill nền trắng */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
