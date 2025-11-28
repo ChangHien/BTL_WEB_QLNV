@@ -1,160 +1,154 @@
 import React, { useState, useEffect } from 'react';
-import { Card, DatePicker, Button, Table, Row, Col, Statistic, message, Tag, Input, Form, Divider } from 'antd';
-import { SearchOutlined, DollarOutlined, UserOutlined } from '@ant-design/icons';
-import luongApi from '../../api/luongApi';
-import { useAuth } from '../../contexts/AuthContext';
+import { message, Spin } from 'antd';
 import dayjs from 'dayjs';
+import luongApi from '../../api/luongApi';
+import nhanVienApi from '../../api/nhanVienApi';
+import phongBanApi from '../../api/phongBanApi';
+import chucVuApi from '../../api/chucVuApi';
+import { useAuth } from '../../contexts/AuthContext';
+import SalaryFilter from './components/SalaryFilter';
+import SalaryDetail from './components/SalaryDetail';
+import SalarySummary from './components/SalarySummary';
 
 const BaoCaoThuNhap = () => {
   const { user } = useAuth();
-  const [data, setData] = useState([]);
-  const [tongNam, setTongNam] = useState(0);
-  const [year, setYear] = useState(dayjs().year());
-  const [loading, setLoading] = useState(false);
-  
-  // State dành cho Admin tra cứu
-  const [targetMaNV, setTargetMaNV] = useState(''); 
-  const [viewingName, setViewingName] = useState(''); 
-
   const isAdminOrHR = user?.role === 'admin' || user?.role === 'hr';
 
-  // Hàm gọi API
-  const fetchBaoCao = async (maNV_can_xem) => {
-    if (!maNV_can_xem) {
-        message.error("Vui lòng nhập Mã Nhân Viên!");
-        return;
-    }
+  const [loading, setLoading] = useState(false);
+  const [year, setYear] = useState(dayjs().year());
+  const [viewMode, setViewMode] = useState('none'); 
 
-    setLoading(true);
-    try {
-      console.log(`Đang lấy báo cáo cho ${maNV_can_xem} năm ${year}`);
-      const res = await luongApi.getThongKeNam(maNV_can_xem, year);
-      
-      setData(res.data.chi_tiet_theo_thang);
-      setTongNam(res.data.tong_thu_nhap_nam);
-      setViewingName(maNV_can_xem); // Cập nhật người đang xem
-      message.success(`Đã tải dữ liệu của ${maNV_can_xem}`);
-      
-    } catch (error) {
-      console.error(error);
-      // Nếu lỗi 404 hoặc 403
-      const msg = error.response?.data?.message || 'Không tìm thấy dữ liệu lương.';
-      message.warning(msg);
-      setData([]);
-      setTongNam(0);
-      setViewingName(maNV_can_xem);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Data States
+  const [detailData, setDetailData] = useState([]); 
+  const [tongNamDetail, setTongNamDetail] = useState(0);
+  const [viewingName, setViewingName] = useState('');
+  const [summaryData, setSummaryData] = useState([]);
 
-  //1.Nếu là Staff: Tự động tải của chính mình khi vào trang
+  // Filter States
+  const [listNhanVien, setListNhanVien] = useState([]);
+  const [filteredNhanVien, setFilteredNhanVien] = useState([]);
+  const [listPhongBan, setListPhongBan] = useState([]);
+  const [listChucVu, setListChucVu] = useState([]);
+  
+  const [selectedPhong, setSelectedPhong] = useState(undefined);
+  const [selectedChucVu, setSelectedChucVu] = useState(undefined);
+  const [targetMaNV, setTargetMaNV] = useState(undefined);
+
+  // 1. Init Data
   useEffect(() => {
-    if (user && !isAdminOrHR) {
-        setTargetMaNV(user.ma_nhan_vien);
-        fetchBaoCao(user.ma_nhan_vien);
+    if (isAdminOrHR) {
+      const fetchCatalogs = async () => {
+        try {
+          const [resNV, resPB, resCV] = await Promise.all([
+            nhanVienApi.getAll(), phongBanApi.getAll(), chucVuApi.getAll()
+          ]);
+          const allNV = resNV.data.data || [];
+          setListNhanVien(allNV);
+          setFilteredNhanVien(allNV);
+          setListPhongBan(Array.isArray(resPB.data) ? resPB.data : []);
+          setListChucVu(Array.isArray(resCV.data) ? resCV.data : []);
+        } catch (error) { console.error(error); }
+      };
+      fetchCatalogs();
+    } else {
+      handleFetchDetail(user.ma_nhan_vien);
     }
   }, [user]);
 
-  //2.Nếu là Admin: Xử lý khi bấm nút Tìm kiếm
-  const handleAdminSearch = () => {
-      fetchBaoCao(targetMaNV);
+  // 2. Filter Logic
+  useEffect(() => {
+    let result = listNhanVien;
+    if (selectedPhong) result = result.filter(nv => nv.ma_phong === selectedPhong);
+    if (selectedChucVu) result = result.filter(nv => nv.ma_chuc_vu === selectedChucVu);
+    setFilteredNhanVien(result);
+    if (targetMaNV && !result.find(nv => nv.ma_nhan_vien === targetMaNV)) setTargetMaNV(undefined);
+  }, [selectedPhong, selectedChucVu, listNhanVien]);
+
+  // 3. Handlers
+  const handleSearch = () => {
+    if (targetMaNV) handleFetchDetail(targetMaNV);
+    else handleFetchSummary();
   };
 
-  const columns = [
-    { 
-      title: 'Tháng', dataIndex: 'thang', key: 'thang',
-      render: t => <Tag color="blue">Tháng {t}</Tag> 
-    },
-    { 
-      title: 'Lương Cơ Bản', dataIndex: 'luong_co_ban', key: 'lcb', 
-      render: v => Number(v).toLocaleString() 
-    },
-    { 
-      title: 'Làm Thêm (OT)', dataIndex: 'luong_them_gio', key: 'ot', 
-      render: v => Number(v).toLocaleString() 
-    },
-    { 
-      title: 'Thực Nhận', dataIndex: 'tong_luong', key: 'total', 
-      render: v => <b style={{ color: '#389e0d', fontSize: 16 }}>{Number(v).toLocaleString()}</b> 
-    },
-  ];
+  const handleFetchDetail = async (maNV) => {
+    setLoading(true);
+    setViewMode('detail');
+    try {
+      const nvInfo = listNhanVien.find(n => n.ma_nhan_vien === maNV);
+      setViewingName(nvInfo ? `${nvInfo.ten_nhan_vien} (${maNV})` : maNV);
+
+      const res = await luongApi.getThongKeNam(maNV, year);
+      setDetailData(res.data.chi_tiet_theo_thang);
+      setTongNamDetail(res.data.tong_thu_nhap_nam);
+      if (isAdminOrHR) message.success(`Đã tải dữ liệu chi tiết.`);
+    } catch (error) {
+      setDetailData([]); setTongNamDetail(0);
+      message.info("Chưa có dữ liệu lương.");
+    } finally { setLoading(false); }
+  };
+
+  const handleFetchSummary = async () => {
+    setLoading(true);
+    setViewMode('summary');
+    setSummaryData([]);
+    try {
+      const listTarget = filteredNhanVien;
+      if (listTarget.length === 0) {
+        message.warning("Không tìm thấy nhân viên nào.");
+        setLoading(false); return;
+      }
+      message.loading({ content: `Đang tính toán cho ${listTarget.length} nhân viên...`, key: 'calc' });
+
+      const promises = listTarget.map(async (nv) => {
+        try {
+          const res = await luongApi.getThongKeNam(nv.ma_nhan_vien, year);
+          return { ...nv, tongThuNhap: res.data.tong_thu_nhap_nam, coDuLieu: true };
+        } catch (err) { return { ...nv, tongThuNhap: 0, coDuLieu: false }; }
+      });
+
+      const results = await Promise.all(promises);
+      setSummaryData(results);
+      message.success({ content: "Hoàn tất!", key: 'calc' });
+    } catch (error) { console.error(error); } finally { setLoading(false); }
+  };
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
       <h2 style={{ marginBottom: 24 }}>
-        {isAdminOrHR ? "🔍 Tra Cứu Thu Nhập Nhân Viên" : "📊 Báo Cáo Thu Nhập Cá Nhân"}
+        {isAdminOrHR ? "🔍 Tra Cứu & Thống Kê Thu Nhập" : "📊 Báo Cáo Thu Nhập Cá Nhân"}
       </h2>
       
-      {/* THANH CÔNG CỤ TÌM KIẾM (Chỉ hiện cho Admin/HR) */}
+      {/* FILTER SECTION */}
       {isAdminOrHR && (
-        <Card style={{ marginBottom: 24, borderTop: '3px solid #1890ff' }}>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end' }}>
-                <div>
-                    <div style={{ marginBottom: 8, fontWeight: 500 }}>Nhập Mã Nhân Viên:</div>
-                    <Input 
-                        prefix={<UserOutlined />} 
-                        placeholder="VD: NV003" 
-                        value={targetMaNV}
-                        onChange={(e) => setTargetMaNV(e.target.value)}
-                        style={{ width: 200 }}
-                        onPressEnter={handleAdminSearch}
-                    />
-                </div>
-                <div>
-                    <div style={{ marginBottom: 8, fontWeight: 500 }}>Chọn Năm:</div>
-                    <DatePicker 
-                        picker="year" 
-                        defaultValue={dayjs()}
-                        onChange={(d) => setYear(d ? d.year() : 2025)} 
-                        style={{ width: 120 }}
-                        allowClear={false}
-                    />
-                </div>
-                <Button type="primary" icon={<SearchOutlined />} onClick={handleAdminSearch} loading={loading}>
-                    Tra Cứu
-                </Button>
-            </div>
-        </Card>
+        <SalaryFilter 
+          listPhongBan={listPhongBan} listChucVu={listChucVu} filteredNhanVien={filteredNhanVien}
+          selectedPhong={selectedPhong} setSelectedPhong={setSelectedPhong}
+          selectedChucVu={selectedChucVu} setSelectedChucVu={setSelectedChucVu}
+          targetMaNV={targetMaNV} setTargetMaNV={setTargetMaNV}
+          year={year} setYear={setYear}
+          onSearch={handleSearch} loading={loading}
+        />
       )}
 
-      {/* HIỂN THỊ KẾT QUẢ (Chỉ hiện khi đã có người được chọn xem) */}
-      {(viewingName || !isAdminOrHR) && (
-          <Row gutter={16}>
-            <Col span={16}>
-              <div style={{ marginBottom: 16, fontWeight: 'bold', fontSize: 16 }}>
-                Dữ liệu lương của: <Tag color="geekblue" style={{ fontSize: 14, padding: '4px 10px' }}>{viewingName || targetMaNV}</Tag>
-                - Năm {year}
-              </div>
-              <Table 
-                columns={columns} 
-                dataSource={data} 
-                rowKey="thang" 
-                pagination={false} 
-                bordered
-                loading={loading}
-                locale={{ emptyText: 'Chưa có dữ liệu lương tháng nào' }}
-              />
-            </Col>
-            
-            <Col span={8}>
-              <Card style={{ background: '#f6ffed', borderColor: '#b7eb8f', textAlign: 'center', position: 'sticky', top: 20 }}>
-                <Statistic 
-                  title={`TỔNG THU NHẬP NĂM ${year}`} 
-                  value={tongNam} 
-                  precision={0} 
-                  suffix="VNĐ" 
-                  valueStyle={{ color: '#389e0d', fontWeight: 'bold', fontSize: 28 }}
-                  prefix={<DollarOutlined />}
-                />
-                <Divider />
-                <div style={{ color: '#888' }}>Nhân viên: {viewingName}</div>
-              </Card>
-            </Col>
-          </Row>
-      )}
+      {/* CONTENT SECTION */}
+      <Spin spinning={loading} tip="Đang tải dữ liệu...">
+        {viewMode === 'detail' && (
+          <SalaryDetail 
+            data={detailData} total={tongNamDetail} name={viewingName} year={year} 
+            loading={loading} isAdmin={isAdminOrHR} onBack={handleFetchSummary}
+          />
+        )}
+
+        {viewMode === 'summary' && isAdminOrHR && (
+          <SalarySummary data={summaryData} year={year} onViewDetail={handleFetchDetail} />
+        )}
+
+        {viewMode === 'none' && isAdminOrHR && (
+          <div style={{ textAlign: 'center', color: '#999', marginTop: 50 }}>Vui lòng chọn bộ lọc và bấm "Xem"</div>
+        )}
+      </Spin>
     </div>
   );
 };
 
-export default BaoCaoThuNhap;
+export default BaoCaoThuNhap; 
