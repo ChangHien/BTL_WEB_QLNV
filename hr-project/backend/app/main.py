@@ -11,4 +11,3 @@ app = FastAPI(title="HR Service - Dev2")
 
 app.include_router(nhanvien.router)
 app.include_router(chamcong.router)
-
