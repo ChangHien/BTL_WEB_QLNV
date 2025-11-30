@@ -1,7 +1,0 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-pymysql
-pydantic
-python-dotenv
-python-multipart
