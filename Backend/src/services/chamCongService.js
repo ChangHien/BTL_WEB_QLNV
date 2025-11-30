@@ -1,10 +1,41 @@
 import db from '../models/index.js';
 import { Op } from 'sequelize';
 import moment from 'moment';
-import {ROLES} from '../config/constantConfig.js';
+import {ROLES, TRANG_THAI_CHUYEN_CAN} from '../config/constantConfig.js';
 
 const ChamCong = db.ChamCong;
 
+/**
+ * Hàm nội bộ để xác định trạng thái chuyên cần (Đi muộn, Về sớm, Đúng giờ)
+ * @param {string} gioVao Thực tế
+ * @param {string} gioRa Thực tế
+ * @returns {string} Trạng thái chuyên cần
+ */
+function tinhTrangThaiChuyenCan(gioVao, gioRa) {
+    const gioVaoThucTe = moment(gioVao, 'HH:mm:ss');
+    const gioRaThucTe = moment(gioRa, 'HH:mm:ss');
+    
+    const gioVaoChuan = moment(GIO_VAO_CHUAN, 'HH:mm:ss');
+    const gioRaChuan = moment(GIO_RA_CHUAN, 'HH:mm:ss');
+
+    let trangThai = TRANG_THAI_CHUYEN_CAN.DUNG_GIO;
+
+    // 1. Kiểm tra Đi muộn
+    const diffVaoPhut = gioVaoThucTe.diff(gioVaoChuan, 'minutes');
+    if (diffVaoPhut > NGUONG_DI_MUON_PHUT) {
+        trangThai = TRANG_THAI_CHUYEN_CAN.DI_MUON;
+    }
+
+    // 2. Kiểm tra Về sớm
+    const diffRaPhut = gioRaChuan.diff(gioRaThucTe, 'minutes');
+    if (diffRaPhut > NGUONG_VE_SOM_PHUT) {
+        if (trangThai === TRANG_THAI_CHUYEN_CAN.DUNG_GIO) {
+            trangThai = TRANG_THAI_CHUYEN_CAN.VE_SOM;
+        }
+    }
+
+    return trangThai;
+}
 /**
  * Kiểm tra xem ca làm mới có bị chồng lấn với bất kỳ ca làm nào đã ghi nhận trong ngày không.
  * Giả định: Người dùng sẽ gửi cả gio_vao và gio_ra.
@@ -37,6 +68,11 @@ export const createChamCongRecord = async (ma_nhan_vien, ngay_lam, gio_vao, gio_
         }
     }
     
+    // CẬP NHẬT: LƯU TRẠNG THÁI CHUYÊN CẦN BAN ĐẦU ⭐
+    const initialStatus = gio_ra 
+        ? tinhTrangThaiChuyenCan(gio_vao, gio_ra) 
+        : TRANG_THAI_CHUYEN_CAN.DANG_LAM;
+
     // Ghi nhận vào DB
     return await ChamCong.create({
         ma_nhan_vien,
@@ -44,6 +80,42 @@ export const createChamCongRecord = async (ma_nhan_vien, ngay_lam, gio_vao, gio_
         gio_vao,
         gio_ra
     });
+};
+
+export const updateGioRaAndCheckChuyenCan = async (ma_nhan_vien, ngay_lam, gio_ra) => {
+    // 1. Tìm bản ghi Check-in chưa có gio_ra trong ngày hôm đó
+    const record = await ChamCong.findOne({
+        where: {
+            ma_nhan_vien,
+            ngay_lam,
+            gio_ra: null // Tìm bản ghi chưa check-out
+        }
+    });
+
+    if (!record) {
+        throw new Error("Không tìm thấy bản ghi Check-in chưa kết thúc trong ngày.");
+    }
+
+    const gio_vao = record.gio_vao;
+
+    // 2. Kiểm tra tính hợp lệ của giờ ra so với giờ vào
+    const checkInTime = moment(gio_vao, 'HH:mm:ss');
+    const checkOutTime = moment(gio_ra, 'HH:mm:ss');
+
+    if (checkOutTime.isBefore(checkInTime)) {
+        throw new Error("Giờ ra phải sau giờ vào.");
+    }
+
+    // 3. Tính toán trạng thái chuyên cần
+    const trang_thai_moi = tinhTrangThaiChuyenCan(gio_vao, gio_ra);
+
+    // 4. Cập nhật bản ghi
+    await record.update({
+        gio_ra,
+        trang_thai_ca: trang_thai_moi
+    });
+
+    return record;
 };
 
 // Lấy lịch sử chấm công theo ngày/tháng

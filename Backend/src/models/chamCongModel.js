@@ -24,6 +24,11 @@ const ChamCongModel = (sequelize, DataTypes) => {
         gio_ra: {
             type: DataTypes.TIME,
             allowNull: true // Cho phép NULL nếu là ca đang làm (chưa check-out)
+        },
+        trang_thai_ca: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+            defaultValue: 'DangLam'
         }
     }, {
         tableName: 'ChamCong',

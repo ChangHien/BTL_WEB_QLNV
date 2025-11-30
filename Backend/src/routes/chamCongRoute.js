@@ -8,19 +8,28 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-// POST /api/chamcong/ghi-nhan
 router.post(
-  '/ghi-nhan', 
+  '/check-in', 
   roleMiddleware([ROLES.ADMIN, ROLES.HR, ROLES.NHAN_VIEN]),
-  chamCongController.ghiNhanChamCong
+  chamCongController.checkIn
 );
 
-// GET /api/chamcong/:ma_nv/:thang/:nam
-// Lấy lịch sử chấm công (NV xem của mình, HR/Admin xem của mọi người)
+router.put(
+    '/check-out', 
+    roleMiddleware([ROLES.NHAN_VIEN, ROLES.ADMIN, ROLES.HR]),
+    chamCongController.checkOut
+);
+
+router.post(
+    '/full', 
+    roleMiddleware([ROLES.ADMIN, ROLES.HR]), // Chỉ Admin/HR mới có quyền nhập ca hoàn chỉnh
+    chamCongController.createFullChamCong
+);
+
 router.get(
-  '/:ma_nv/:thang/:nam', 
+  '/:ma_nv', 
   roleMiddleware([ROLES.ADMIN, ROLES.HR, ROLES.NHAN_VIEN]),
-  chamCongController.getLichSuChamCong
+  chamCongController.getHistory
 );
 
 export default router;
