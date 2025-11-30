@@ -38,7 +38,7 @@ export const getAllNhanVien = async () => {
     });
 };
 
-// Lấy nhân viên theo mã
+// Lấy nhân viên theo mã danh cho nv
 
 export const getNhanVienById = async (ma_nhan_vien) => {
     return await NhanVien.findByPk(ma_nhan_vien, {

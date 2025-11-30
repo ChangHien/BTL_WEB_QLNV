@@ -35,5 +35,11 @@ db.NhanVien.hasMany(db.ChamCong, { foreignKey: 'ma_nhan_vien', as: 'chamCongs' }
 db.NhanVien.hasMany(db.BangLuong, { foreignKey: 'ma_nhan_vien', as: 'bangLuongs' });
 db.NhanVien.hasOne(db.TaiKhoan, { foreignKey: 'ma_nhan_vien', as: 'taiKhoan' });
 
+// Quan hệ ngược 
+db.ChamCong.belongsTo(db.NhanVien, { foreignKey: 'ma_nhan_vien', as: 'nhanVien' });
+db.BangLuong.belongsTo(db.NhanVien, { foreignKey: 'ma_nhan_vien', as: 'nhanVien' });
+db.TaiKhoan.belongsTo(db.NhanVien, { foreignKey: 'ma_nhan_vien', as: 'nhanVien' });
+db.PhongBan.hasMany(db.NhanVien, { foreignKey: 'ma_phong', as: 'nhanViens' });
+
 export default db;
 

@@ -4,6 +4,7 @@ import {
   createPhongBan,
   updatePhongBan,
   deletePhongBan,
+  getPhongBanDetails
 } from "../services/phongBanService.js";
 
 export const getAll = async (req, res, next) => {
@@ -15,15 +16,23 @@ export const getAll = async (req, res, next) => {
   }
 };
 
-export const getById = async (req, res, next) => {
+export const getById = async (req, res, next) => {          
   try {
-    const record = await findPhongBanByMa(req.params.ma_phong);
-    if (!record) {
-      return res.status(404).json({ message: "Phòng ban không tồn tại" });
+    //api/phong-bans/P01?thang=11&nam=2025)
+    const thang = req.query.thang ? parseInt(req.query.thang) : undefined;
+    const nam = req.query.nam ? parseInt(req.query.nam) : undefined;
+    const { data: record, error, status } = await getPhongBanDetails(
+        req.params.ma_phong, 
+        thang, 
+        nam
+    ); 
+
+   if (error) {
+     return res.status(status || 404).json({ message: error });
     }
     res.json(record);
   } catch (err) {
-    next(err);
+   next(err);
   }
 };
 

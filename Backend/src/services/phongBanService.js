@@ -140,3 +140,61 @@ export const deletePhongBan = async (maPhong) => {
   }
   return { data: true };
 };
+
+export const getPhongBanDetails = async (maPhong, thangHienTai, namHienTai) => {
+    const phongBanCode = normalizeCode(maPhong);
+
+    // điều kiện tìm kiếm cho Bảng Lương (BangLuong)
+    const luongWhere = {};
+    if (thangHienTai) luongWhere.thang = thangHienTai;
+    if (namHienTai) luongWhere.nam = namHienTai;
+
+    const record = await db.PhongBan.findOne({
+        where: { ma_phong: phongBanCode },
+        include: [{
+            model: db.NhanVien,
+            as: 'nhanViens',
+            attributes: ['ma_nhan_vien', 'ten_nhan_vien'], 
+            include: [{
+                model: db.BangLuong, 
+                as: 'bangLuongs', 
+                attributes: ['tong_luong', 'thang', 'nam'],
+                where: luongWhere, 
+                required: false, 
+            }],
+        }],
+        raw: false, 
+    });
+
+    if (!record) {
+        return { error: "Phòng ban không tồn tại", status: 404 };
+    }
+
+    // 3. Tính Tổng Lương của Phòng Ban 
+    const phongBanData = record.get({ plain: true });
+    let tongLuongPhongBan = 0;
+
+    if (phongBanData.nhanViens && phongBanData.nhanViens.length > 0) {
+        phongBanData.nhanViens = phongBanData.nhanViens.map(nv => {
+            let luongThucTe = 0;
+            const luongRecord = nv.bangLuongs && nv.bangLuongs.length > 0 ? nv.bangLuongs[0] : null; 
+            
+            if (luongRecord) {
+                luongThucTe = parseFloat(luongRecord.tong_luong);
+                tongLuongPhongBan += isNaN(luongThucTe) ? 0 : luongThucTe;
+            }
+            return {
+                ma_nhan_vien: nv.ma_nhan_vien,
+                ten_nhan_vien: nv.ten_nhan_vien,
+                tong_luong_thuc_te: luongThucTe.toFixed(2), 
+            };
+        });
+    }
+    return { 
+        data: {
+            ...phongBanData,
+            nhanViens: phongBanData.nhanViens, 
+            tong_luong_phong_ban: tongLuongPhongBan.toFixed(2), 
+        }
+    };
+};
