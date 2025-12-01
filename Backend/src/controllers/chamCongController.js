@@ -97,7 +97,7 @@ export const createFullChamCong = async (req, res) => {
     }
 };
 
-//Lấy lịch sử chấm công theo tháng/năm.
+//Lấy lịch sử chấm công của 1 nv theo tháng/năm.
 
 export const getHistory = async (req, res) => {
     const { ma_nv } = req.params;
@@ -128,5 +128,29 @@ export const getHistory = async (req, res) => {
         });
     } catch (error) {
         res.status(500).send({ message: "Lỗi khi lấy lịch sử chấm công: " + error.message });
+    }
+};
+// ds chuyên cần all nv 
+export const getAll = async (req, res) => {
+    const { thang, nam } = req.query;
+
+    if (!thang || !nam) {
+        return res.status(400).send({ message: "Thiếu tham số tháng và năm." });
+    }
+
+    try {
+        // Gọi Service để lấy dữ liệu tổng hợp
+        const data = await chamCongService.getAllChamCongSummary(
+            parseInt(thang), 
+            parseInt(nam)
+        );
+
+        res.send({ 
+            message: `Lấy báo cáo chuyên cần tháng ${thang}/${nam} thành công.`, 
+            data: data
+        });
+    } catch (error) {
+        console.error("Lỗi Controller getAllSummary:", error);
+        res.status(500).send({ message: "Lỗi khi lấy báo cáo chuyên cần: " + error.message });
     }
 };

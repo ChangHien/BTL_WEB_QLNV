@@ -33,3 +33,9 @@ router.get(
 );
 
 export default router;
+
+router.get(
+    '/summary', 
+    roleMiddleware([ROLES.ADMIN, ROLES.HR]), // Chỉ Admin/HR có quyền xem báo cáo tổng hợp
+    chamCongController.getAll
+);

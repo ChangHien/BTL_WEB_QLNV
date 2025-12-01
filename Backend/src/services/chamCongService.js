@@ -1,10 +1,11 @@
 import db from '../models/index.js';
 import { Op } from 'sequelize';
 import moment from 'moment';
-import {ROLES, TRANG_THAI_CHUYEN_CAN} from '../config/constantConfig.js';
+import {ROLES, TRANG_THAI_CHUYEN_CAN, GIO_VAO_CHUAN, GIO_RA_CHUAN, NGUONG_DI_MUON_PHUT, NGUONG_VE_SOM_PHUT} from '../config/constantConfig.js';
 
 const ChamCong = db.ChamCong;
-
+const NhanVien = db.NhanVien;
+const ChucVu = db.ChucVu;
 /**
  * Hàm nội bộ để xác định trạng thái chuyên cần (Đi muộn, Về sớm, Đúng giờ)
  * @param {string} gioVao Thực tế
@@ -78,7 +79,8 @@ export const createChamCongRecord = async (ma_nhan_vien, ngay_lam, gio_vao, gio_
         ma_nhan_vien,
         ngay_lam,
         gio_vao,
-        gio_ra
+        gio_ra,
+        trang_thai_ca: initialStatus // Lưu trạng thái 
     });
 };
 
@@ -141,4 +143,60 @@ export const getChamCongByMaNv = async (ma_nhan_vien, thang, nam, userRole, curr
     });
     
     return { records: records }; 
+};
+// danh sách chấm công của tất cả NV trong 1 tháng
+/**
+ * @param {number} thang
+ * @param {number} nam
+ */
+export const getAllChamCongSummary = async (thang, nam) => {
+    const startDate = moment([nam, thang - 1]).startOf('month').format('YYYY-MM-DD');
+    const endDate = moment([nam, thang - 1]).endOf('month').format('YYYY-MM-DD');
+    const records = await ChamCong.findAll({
+        where: {
+            ngay_lam: {
+                [Op.between]: [startDate, endDate]
+            }
+        },
+        include: [{
+            model: NhanVien,
+            as: 'nhanVien',
+            attributes: ['ma_nhan_vien', 'ten_nhan_vien'],
+
+            include: [{
+                model: ChucVu,
+                as: 'chucVu',
+                attributes: ['ten_chuc_vu'] 
+            }]
+        }],
+        order: [
+            [{ model: NhanVien, as: 'nhanVien' }, 'ma_nhan_vien', 'ASC'],
+            ['ngay_lam', 'ASC']
+        ],
+        raw: true,
+        nest: true
+    });
+
+    const summary = {};
+
+    records.forEach(record => {
+        const maNv = record.nhanVien.ma_nhan_vien;
+        if (!summary[maNv]) {
+            summary[maNv] = {
+                ma_nhan_vien: record.nhanVien.ma_nhan_vien,
+                ten_nhan_vien: record.nhanVien.ten_nhan_vien,
+                ten_chuc_vu: record.nhanVien.chucVu ? record.nhanVien.chucVu.ten_chuc_vu : 'N/A', 
+                chi_tiet_ca: []
+            };
+        }
+        
+        summary[maNv].chi_tiet_ca.push({
+            ngay_lam: record.ngay_lam,
+            gio_vao: record.gio_vao,
+            gio_ra: record.gio_ra,
+            trang_thai_ca: record.trang_thai_ca
+        });
+    });
+
+    return Object.values(summary); 
 };
