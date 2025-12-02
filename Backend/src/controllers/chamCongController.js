@@ -139,18 +139,19 @@ export const getAll = async (req, res) => {
     }
 
     try {
-        // Gọi Service để lấy dữ liệu tổng hợp
-        const data = await chamCongService.getAllChamCongSummary(
+        // Gọi Service để lấy dữ liệu tổng hợp (chỉ trả về 4 trạng thái thống kê)
+        const summaryCounts = await chamCongService.getAllChamCongSummary(
             parseInt(thang), 
             parseInt(nam)
         );
 
         res.send({ 
-            message: `Lấy báo cáo chuyên cần tháng ${thang}/${nam} thành công.`, 
-            data: data
+            message: `Lấy báo cáo tổng hợp nhân viên theo 4 trạng thái chuyên cần tháng ${thang}/${nam} thành công.`, 
+            // data giờ chỉ chứa đối tượng tổng hợp (vd: { "DungGio": 55, "DiMuon": 12, ...})
+            data: summaryCounts
         });
     } catch (error) {
-        console.error("Lỗi Controller getAllSummary:", error);
+        console.error("Lỗi Controller getAll:", error);
         res.status(500).send({ message: "Lỗi khi lấy báo cáo chuyên cần: " + error.message });
     }
 };

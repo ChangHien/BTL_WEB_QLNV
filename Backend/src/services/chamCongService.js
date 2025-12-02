@@ -144,59 +144,45 @@ export const getChamCongByMaNv = async (ma_nhan_vien, thang, nam, userRole, curr
     
     return { records: records }; 
 };
-// danh sách chấm công của tất cả NV trong 1 tháng
 /**
+ * ds trả về tổng sl nv theo trạng thái cc
  * @param {number} thang
  * @param {number} nam
+ * @returns {Object} 
  */
 export const getAllChamCongSummary = async (thang, nam) => {
     const startDate = moment([nam, thang - 1]).startOf('month').format('YYYY-MM-DD');
     const endDate = moment([nam, thang - 1]).endOf('month').format('YYYY-MM-DD');
     const records = await ChamCong.findAll({
+        attributes: ['ma_nhan_vien', 'trang_thai_ca'], 
         where: {
             ngay_lam: {
                 [Op.between]: [startDate, endDate]
             }
         },
-        include: [{
-            model: NhanVien,
-            as: 'nhanVien',
-            attributes: ['ma_nhan_vien', 'ten_nhan_vien'],
-
-            include: [{
-                model: ChucVu,
-                as: 'chucVu',
-                attributes: ['ten_chuc_vu'] 
-            }]
-        }],
-        order: [
-            [{ model: NhanVien, as: 'nhanVien' }, 'ma_nhan_vien', 'ASC'],
-            ['ngay_lam', 'ASC']
-        ],
-        raw: true,
-        nest: true
+        raw: true
     });
 
-    const summary = {};
-
+    const uniqueEmployeesByStatus = {
+        [TRANG_THAI_CHUYEN_CAN.DUNG_GIO]: new Set(),
+        [TRANG_THAI_CHUYEN_CAN.DI_MUON]: new Set(),
+        [TRANG_THAI_CHUYEN_CAN.VE_SOM]: new Set(),
+        [TRANG_THAI_CHUYEN_CAN.NGHI_PHEP]: new Set(),
+    };
     records.forEach(record => {
-        const maNv = record.nhanVien.ma_nhan_vien;
-        if (!summary[maNv]) {
-            summary[maNv] = {
-                ma_nhan_vien: record.nhanVien.ma_nhan_vien,
-                ten_nhan_vien: record.nhanVien.ten_nhan_vien,
-                ten_chuc_vu: record.nhanVien.chucVu ? record.nhanVien.chucVu.ten_chuc_vu : 'N/A', 
-                chi_tiet_ca: []
-            };
+        const maNv = record.ma_nhan_vien;
+        const trangThai = record.trang_thai_ca;
+
+        if (uniqueEmployeesByStatus[trangThai]) {
+            uniqueEmployeesByStatus[trangThai].add(maNv);
         }
-        
-        summary[maNv].chi_tiet_ca.push({
-            ngay_lam: record.ngay_lam,
-            gio_vao: record.gio_vao,
-            gio_ra: record.gio_ra,
-            trang_thai_ca: record.trang_thai_ca
-        });
     });
 
-    return Object.values(summary); 
+    // 4. Chuyển đổi Set sang số đếm
+    const globalEmployeeCounts = {};
+    for (const [status, employeesSet] of Object.entries(uniqueEmployeesByStatus)) {
+        globalEmployeeCounts[status] = employeesSet.size;
+    }
+
+    return globalEmployeeCounts;
 };
