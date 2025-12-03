@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { message, Spin } from 'antd';
 import dayjs from 'dayjs';
-
-// API
 import luongApi from '../../api/luongApi';
 import nhanVienApi from '../../api/nhanVienApi';
 import phongBanApi from '../../api/phongBanApi';
 import chucVuApi from '../../api/chucVuApi';
-
-// Components
 import SalaryFilter from './components/SalaryFilter';
 import SalaryResult from './components/SalaryResult';
 
@@ -65,8 +61,8 @@ const TinhLuongPage = () => {
     try {
       const payload = {
         ma_nhan_vien: targetMaNV, 
-        ma_phong: selectedPhong,      // Gửi mã phòng để BE lọc
-        ma_chuc_vu: selectedChucVu,   // Gửi mã chức vụ để BE lọc
+        ma_phong: selectedPhong,      
+        ma_chuc_vu: selectedChucVu,   
         thang: selectedMonth.month() + 1,
         nam: selectedMonth.year()
       };
@@ -75,7 +71,7 @@ const TinhLuongPage = () => {
       message.success(res.data.message);
       
       if (res.data.data && targetMaNV) { 
-        setKetQua(res.data.data); // Chỉ hiện kết quả nếu tính cho 1 người
+        setKetQua(res.data.data); 
       } 
     } catch (error) {
       message.error(error.response?.data?.message || 'Lỗi khi tính lương');
