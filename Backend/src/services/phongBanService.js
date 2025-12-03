@@ -198,3 +198,39 @@ export const getPhongBanDetails = async (maPhong, thangHienTai, namHienTai) => {
         }
     };
 };
+
+/**
+ * Lấy tổng lương của tất cả các phòng ban trong một tháng/năm cụ thể.
+ * @param {number} thang
+ * @param {number} nam
+ * @returns {Array} 
+ */
+export const listTongLuongPhongBan = async (thang, nam) => {
+    const result = await db.PhongBan.findAll({
+        attributes: [
+            'ma_phong',
+            'ten_phong',
+            [db.sequelize.fn('SUM', db.sequelize.col('nhanViens.bangLuongs.tong_luong')), 'tong_luong_phong_ban']
+        ],
+        include: [{
+            model: db.NhanVien,
+            as: 'nhanViens',
+            attributes: [], 
+            include: [{
+                model: db.BangLuong,
+                as: 'bangLuongs',
+                attributes: [], 
+                where: { thang, nam }, 
+                required: false,
+            }],
+        }],
+        group: ['PhongBan.ma_phong', 'PhongBan.ten_phong'], 
+        order: [['ma_phong', 'ASC']],
+        raw: true,
+    });
+    return result.map(item => ({
+        ma_phong: item.ma_phong,
+        ten_phong: item.ten_phong,
+        tong_luong_phong_ban: item.tong_luong_phong_ban ? parseFloat(item.tong_luong_phong_ban).toFixed(2) : '0.00'
+    }));
+};

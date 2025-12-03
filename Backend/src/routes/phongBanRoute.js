@@ -8,5 +8,6 @@ router.get("/:ma_phong", phongBanController.getById);
 router.post("/", phongBanController.create);
 router.put("/:ma_phong", phongBanController.update);
 router.delete("/:ma_phong", phongBanController.remove);
+router.get("/summary", phongBanController.getTongLuongPhongBan);
 
 export default router;

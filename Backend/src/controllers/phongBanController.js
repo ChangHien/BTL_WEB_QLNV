@@ -4,7 +4,8 @@ import {
   createPhongBan,
   updatePhongBan,
   deletePhongBan,
-  getPhongBanDetails
+  getPhongBanDetails,
+  listTongLuongPhongBan
 } from "../services/phongBanService.js";
 
 export const getAll = async (req, res, next) => {
@@ -73,4 +74,30 @@ export const remove = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+export const getTongLuongPhongBan = async (req, res, next) => {
+    try {
+        const thang = req.query.thang ? parseInt(req.query.thang) : undefined;
+        const nam = req.query.nam ? parseInt(req.query.nam) : undefined;
+
+        if (!thang || !nam) {
+            return res.status(400).json({ message: "Vui lòng cung cấp tham số tháng và năm." });
+        }
+        
+        const data = await listTongLuongPhongBan(thang, nam);
+        
+        if (!data || data.length === 0) {
+            return res.status(404).json({ message: `Không tìm thấy dữ liệu lương tháng ${thang}/${nam}.` });
+        }
+        
+        res.json({
+            message: `Tổng hợp lương phòng ban tháng ${thang}/${nam} thành công.`,
+            data: data
+        });
+        
+    } catch (err) {
+        console.error("Lỗi khi lấy tổng lương phòng ban:", err);
+        next(err);
+    }
 };
