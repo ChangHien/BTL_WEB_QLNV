@@ -38,14 +38,15 @@ const EmployeeDashboard = () => {
       setLoading(true);
       try {
         // 1. Lấy thông tin cá nhân
-        const resProfile = await nhanVienApi.get(user.ma_nhan_vien);
-        setMyProfile(resProfile.data.data);
+        const resProfile = await nhanVienApi.getById(user.ma_nhan_vien);
+        
+        setMyProfile(resProfile.data); 
 
         // 2. Lấy dữ liệu chấm công tháng hiện tại
         const currentMonth = dayjs().month() + 1;
         const currentYear = dayjs().year();
         const resCC = await chamCongApi.getLichSu(user.ma_nhan_vien, currentMonth, currentYear);
-        const listCC = resCC.data.data || [];
+        const listCC = resCC.data?.data || [];
 
         // 3. Xử lý số liệu
         let late = 0;
@@ -82,17 +83,17 @@ const EmployeeDashboard = () => {
         if (early > 0) chartData.push({ 
             name: 'Về sớm', 
             value: early, 
-            fill: '#ff4d4f' // Đỏ
+            fill: '#ff4d4f' 
         });
         if (late > 0) chartData.push({ 
             name: 'Đi muộn', 
             value: late, 
-            fill: '#faad14' // Vàng
+            fill: '#faad14' 
         });
         if (onTime > 0) chartData.push({ 
             name: 'Đúng giờ', 
             value: onTime, 
-            fill: '#52c41a' // Xanh lá
+            fill: '#52c41a' 
         });
 
         setAttendanceData(chartData);
@@ -132,14 +133,14 @@ const EmployeeDashboard = () => {
               <Descriptions.Item label="Phòng Ban"><b>{myProfile.phongBan?.ten_phong || '---'}</b></Descriptions.Item>
               <Descriptions.Item label="Chức Vụ"><b>{myProfile.chucVu?.ten_chuc_vu || '---'}</b></Descriptions.Item>
               <Descriptions.Item label="Ngày Vào Làm">{myProfile.ngay_vao_lam ? dayjs(myProfile.ngay_vao_lam).format('DD/MM/YYYY') : '---'}</Descriptions.Item>
-              <Descriptions.Item label="Mức Lương CB"><span style={{ color: '#cf1322', fontWeight: 'bold' }}>{Number(myProfile.muc_luong_co_ban).toLocaleString('vi-VN')} VNĐ</span></Descriptions.Item>
+              <Descriptions.Item label="Mức Lương CB"><span style={{ color: '#cf1322', fontWeight: 'bold' }}>{myProfile.muc_luong_co_ban ? Number(myProfile.muc_luong_co_ban).toLocaleString('vi-VN') : 0} VNĐ</span></Descriptions.Item>
             </Descriptions>
           </Card>
 
           {/* KHỐI THỐNG KÊ CHUYÊN CẦN */}
           <Card title={<span><ClockCircleOutlined /> Thống Kê Tháng {dayjs().month() + 1}</span>} bordered={false}>
             <Row align="middle">
-                {/* Phần Chú giải (Legend) dạng Text nằm bên trái */}
+                {/* Phần Chú giải (Legend) */}
                 <Col span={10}>
                     <Statistic title="Tổng ngày đi làm" value={attendanceStats.totalDays} suffix="ngày" />
                     
