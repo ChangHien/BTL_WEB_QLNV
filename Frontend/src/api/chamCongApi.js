@@ -1,16 +1,29 @@
-import axiosClient from './axiosClient';
+import axiosClient from "./axiosClient";
 
 const chamCongApi = {
-  // Gửi yêu cầu ghi nhận công: POST /api/chamcong/ghi-nhan
-  ghiNhan: (data) => {
-    // data = { ma_nhan_vien, ngay_lam, gio_vao, gio_ra }
-    return axiosClient.post('/chamcong/ghi-nhan', data);
+  // Lấy tất cả chấm công
+  getAll: async () => {
+    const res = await axiosClient.get(`/chamcong`);
+    return res.data.data || [];
   },
 
-  // Lấy lịch sử chấm công: GET /api/chamcong/:ma_nv/:thang/:nam
-  getLichSu: (ma_nv, thang, nam) => {
-    return axiosClient.get(`/chamcong/${ma_nv}/${thang}/${nam}`);
-  }
+  // Tạo chấm công mới
+  create: async (payload) => {
+    const res = await axiosClient.post(`/chamcong`, payload);
+    return res.data;
+  },
+
+  // Cập nhật chấm công (nếu cần)
+  update: async (id, payload) => {
+    const res = await axiosClient.put(`/chamcong/${id}`, payload);
+    return res.data;
+  },
+
+  // Xóa chấm công
+  delete: async (id) => {
+    const res = await axiosClient.delete(`/chamcong/${id}`);
+    return res.data;
+  },
 };
 
 export default chamCongApi;

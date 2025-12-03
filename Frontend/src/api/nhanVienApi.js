@@ -1,21 +1,35 @@
-import axiosClient from './axiosClient';
+import axiosClient from "./axiosClient";
 
 const nhanVienApi = {
-  getAll: () => {
-    return axiosClient.get('/nhanvien');
+  // 1. Lấy tất cả nhân viên
+  getAll: async () => {
+    const res = await axiosClient.get(`/nhanvien`);
+    return res.data.data || [];
   },
-  get: (id) => {
-    return axiosClient.get(`/nhanvien/${id}`);
+
+  // 2. Lấy thông tin 1 nhân viên theo mã
+  getById: async (maNhanVien) => {
+    const res = await axiosClient.get(`/nhanvien/${maNhanVien}`);
+    return res.data;
   },
-  create: (data) => {
-    return axiosClient.post('/nhanvien', data);
+
+  // 3. Tạo nhân viên mới
+  create: async (payload) => {
+    const res = await axiosClient.post(`/nhanvien`, payload);
+    return res.data;
   },
-  update: (id, data) => {
-    return axiosClient.put(`/nhanvien/${id}`, data);
+
+  // 4. Cập nhật nhân viên
+  update: async (maNhanVien, payload) => {
+    const res = await axiosClient.put(`/nhanvien/${maNhanVien}`, payload);
+    return res.data;
   },
-  delete: (id) => {
-    return axiosClient.delete(`/nhanvien/${id}`);
-  }
+
+  // 5. Xóa nhân viên
+  delete: async (maNhanVien) => {
+    const res = await axiosClient.delete(`/nhanvien/${maNhanVien}`);
+    return res.data;
+  },
 };
 
 export default nhanVienApi;

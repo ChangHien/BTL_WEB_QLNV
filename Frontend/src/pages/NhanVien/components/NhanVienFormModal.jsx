@@ -1,72 +1,88 @@
-import { useState, useEffect } from "react";
-import nhanVienApi from "../../../api/nhanVienApi";
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, Select } from 'antd';
 
-export default function NhanVienFormModal({ onClose, onSuccess, data }) {
-    const isEdit = Boolean(data);
+const { Option } = Select;
 
-    const [form, setForm] = useState({
-        ma_nv: "",
-        ho_ten: "",
-        gioi_tinh: "Nam",
-        ngay_sinh: "",
-        phong_ban_id: ""
-    });
+const NhanVienFormModal = ({
+  visible,
+  onCancel,
+  onOk,
+  editingNhanVien,
+  listPhongBan,
+  listChucVu
+}) => {
+  const [form] = Form.useForm();
 
-    useEffect(() => {
-        if (data) setForm(data);
-        else {
-            const autoId = "NV" + new Date().getFullYear() + Math.floor(Math.random() * 900 + 100);
-            setForm((f) => ({ ...f, ma_nv: autoId }));
-        }
-    }, [data]);
+  useEffect(() => {
+    form.resetFields();
+    if (editingNhanVien) form.setFieldsValue(editingNhanVien);
+  }, [editingNhanVien]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm({ ...form, [name]: value });
-    };
+  return (
+    <Modal
+      title={editingNhanVien ? "Chỉnh sửa nhân viên" : "Thêm nhân viên"}
+      open={visible}
+      onOk={async () => {
+        const values = await form.validateFields();
+        onOk(values);
+      }}
+      onCancel={onCancel}
+      okText="Lưu"
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item
+          name="ma_nhan_vien"
+          label="Mã NV"
+          rules={[{ required: true, message: 'Nhập mã nhân viên!' }]}
+        >
+          <Input disabled={!!editingNhanVien} />
+        </Form.Item>
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+        <Form.Item
+          name="ten_nhan_vien"
+          label="Tên NV"
+          rules={[{ required: true, message: 'Nhập tên nhân viên!' }]}
+        >
+          <Input />
+        </Form.Item>
 
-        if (isEdit) await nhanVienApi.update(data.id, form);
-        else await nhanVienApi.create(form);
+        <Form.Item name="ma_phong" label="Phòng Ban">
+          <Select allowClear>
+            {listPhongBan.map(pb => (
+              <Option key={pb.ma_phong} value={pb.ma_phong}>{pb.ten_phong}</Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-        onSuccess();
-        onClose();
-    };
+        <Form.Item name="ma_chuc_vu" label="Chức Vụ">
+          <Select allowClear>
+            {listChucVu.map(cv => (
+              <Option key={cv.ma_chuc_vu} value={cv.ma_chuc_vu}>{cv.ten_chuc_vu}</Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-    return (
-        <div className="modal-backdrop">
-            <div className="modal-content">
-                <h3>{isEdit ? "Sửa nhân viên" : "Thêm nhân viên"}</h3>
+        <Form.Item
+          name="muc_luong_co_ban"
+          label="Mức lương"
+          rules={[{ required: true, message: 'Nhập mức lương!' }]}
+        >
+          <Input type="number" />
+        </Form.Item>
 
-                <form onSubmit={handleSubmit}>
-                    <label>Mã nhân viên</label>
-                    <input value={form.ma_nv} name="ma_nv" onChange={handleChange} disabled />
+        <Form.Item name="ngay_vao_lam" label="Ngày vào làm">
+          <Input type="date" />
+        </Form.Item>
 
-                    <label>Họ tên</label>
-                    <input value={form.ho_ten} name="ho_ten" onChange={handleChange} required />
+        <Form.Item name="trang_thai" label="Trạng Thái">
+          <Select>
+            <Option value="DangLam">Đang làm</Option>
+            <Option value="DaNghi">Đã nghỉ</Option>
+          </Select>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
 
-                    <label>Giới tính</label>
-                    <select name="gioi_tinh" value={form.gioi_tinh} onChange={handleChange}>
-                        <option>Nam</option>
-                        <option>Nữ</option>
-                    </select>
-
-                    <label>Ngày sinh</label>
-                    <input type="date" name="ngay_sinh" value={form.ngay_sinh} onChange={handleChange} />
-
-                    <label>Phòng ban</label>
-                    <input name="phong_ban_id" value={form.phong_ban_id} onChange={handleChange} />
-
-                    <div className="flex mt-3">
-                        <button className="btn btn-primary" type="submit">
-                            {isEdit ? "Lưu" : "Thêm"}
-                        </button>
-                        <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-}
+export default NhanVienFormModal;

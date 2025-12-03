@@ -1,23 +1,57 @@
-import { useState, useEffect } from "react";
-import useDebounce from "../../../hooks/useDebounce";
+import React from 'react';
+import { Row, Col, Select, Button } from 'antd';
+import { PlusOutlined, FilterOutlined } from '@ant-design/icons';
 
-export default function NhanVienFilter({ onChange }) {
-    const [keyword, setKeyword] = useState("");
-    const debouncedKeyword = useDebounce(keyword, 400);
+const { Option } = Select;
 
-    useEffect(() => {
-        onChange({ keyword: debouncedKeyword });
-    }, [debouncedKeyword]);
+const NhanVienFilter = ({
+  listPhongBan,
+  listChucVu,
+  selectedPhong,
+  selectedChucVu,
+  setSelectedPhong,
+  setSelectedChucVu,
+  onAdd
+}) => {
+  return (
+    <Row gutter={16}>
+      <Col span={6}>
+        <div style={{ fontWeight: 500, marginBottom: 5 }}>Phòng Ban</div>
+        <Select
+          placeholder="Tất cả"
+          style={{ width: '100%' }}
+          allowClear
+          value={selectedPhong}
+          onChange={setSelectedPhong}
+        >
+          {listPhongBan.map(pb => (
+            <Option key={pb.ma_phong} value={pb.ma_phong}>{pb.ten_phong}</Option>
+          ))}
+        </Select>
+      </Col>
 
-    return (
-        <div className="card p-3 mb-3">
-            <label>Tìm kiếm</label>
-            <input
-                className="form-control"
-                placeholder="Nhập tên hoặc mã nhân viên..."
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-            />
-        </div>
-    );
-}
+      <Col span={6}>
+        <div style={{ fontWeight: 500, marginBottom: 5 }}>Chức Vụ</div>
+        <Select
+          placeholder="Tất cả"
+          style={{ width: '100%' }}
+          allowClear
+          value={selectedChucVu}
+          onChange={setSelectedChucVu}
+        >
+          {listChucVu.map(cv => (
+            <Option key={cv.ma_chuc_vu} value={cv.ma_chuc_vu}>{cv.ten_chuc_vu}</Option>
+          ))}
+        </Select>
+      </Col>
+
+      <Col span={12} style={{ textAlign: 'right' }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
+          Thêm Nhân Viên
+        </Button>
+      </Col>
+    </Row>
+  );
+};
+
+export default NhanVienFilter;
