@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, Select, Spin } from 'antd';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import dayjs from 'dayjs';
-import chamCongApi from '../../../../api/chamCongApi'; // Chú ý đường dẫn import
+import chamCongApi from '../../../../api/chamCongApi'; 
 
 const ATTENDANCE_COLORS = {
   'Đúng giờ': '#52c41a',
