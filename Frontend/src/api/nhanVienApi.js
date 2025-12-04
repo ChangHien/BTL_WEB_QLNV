@@ -4,7 +4,8 @@ const nhanVienApi = {
   // 1. Lấy tất cả nhân viên
   getAll: async () => {
     const res = await axiosClient.get(`/nhanvien`);
-    return res.data.data || [];
+    // Support responses shaped as { data: [...] } or direct array/object
+    return res.data?.data ?? res.data ?? [];
   },
 
   // 2. Lấy thông tin 1 nhân viên theo mã

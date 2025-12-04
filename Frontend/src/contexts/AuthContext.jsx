@@ -1,77 +1,63 @@
-import React, { createContext, useEffect, useState, useContext } from "react";
-import authApi from "../api/authApi";
-import axiosClient from "../api/axiosClient";
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import axiosClient from '../api/axiosClient'; 
+const AuthContext = createContext();
 
-export const AuthContext = createContext(null);
-
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 1. Khôi phục phiên khi F5
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-
-    if (savedToken) {
-      setToken(savedToken);
-      axiosClient.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+    const storedToken = localStorage.getItem('user_token');
+    const storedUser = localStorage.getItem('user_info');
+    
+    if (storedToken && storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        localStorage.removeItem('user_token');
+      }
     }
-
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-
     setLoading(false);
   }, []);
 
+  // 2. LOGIN 
   const login = async (username, password) => {
     try {
-      const res = await authApi.login({ username, password });
+      // Gọi API xuống Backend
+      const response = await axiosClient.post('/auth/login', {
+        username,
+        password
+      });
 
-      const accessToken = res.token;
-      const userInfo = res.user;
+      // Lấy token thật từ Backend 
+      const { token, user } = response.data;
 
-      setToken(accessToken);
-      setUser(userInfo);
+      // Lưu token 
+      localStorage.setItem('user_token', token);
+      localStorage.setItem('user_info', JSON.stringify(user));
+      setUser(user);
 
-      localStorage.setItem("token", accessToken);
-      localStorage.setItem("user", JSON.stringify(userInfo));
-
-      axiosClient.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-
-      return { success: true };
+      return true;
     } catch (error) {
-      return { success: false, message: error.response?.data?.message || "Đăng nhập thất bại" };
+      const msg = error.response?.data?.message || "Lỗi đăng nhập";
+      throw new Error(msg);
     }
   };
 
-  const updateUser = (data) => {
-    setUser(data);
-    localStorage.setItem("user", JSON.stringify(data));
-  };
-
+  // 3. Đăng xuất
   const logout = () => {
-    setToken(null);
     setUser(null);
-
-    delete axiosClient.defaults.headers.common["Authorization"];
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem('user_token');
+    localStorage.removeItem('user_info');
+    window.location.href = '/login';
   };
 
-  const value = {
-    user,
-    token,
-    loading,
-    login,
-    logout,
-    updateUser,
-    isAuthenticated: !!token,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+  return (
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+};
 
 export const useAuth = () => useContext(AuthContext);
