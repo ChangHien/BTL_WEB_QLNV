@@ -17,8 +17,7 @@ const PhongBanPage = () => {
     setLoading(true);
     try {
       const res = await phongBanApi.getAll();
-      
-      setData(Array.isArray(res.data) ? res.data : []); 
+      setData(Array.isArray(res) ? res : []);
     } catch (error) {
       message.error('Lỗi tải danh sách phòng ban');
     } finally {
