@@ -42,11 +42,11 @@ const BaoCaoThuNhap = () => {
           const [resNV, resPB, resCV] = await Promise.all([
             nhanVienApi.getAll(), phongBanApi.getAll(), chucVuApi.getAll()
           ]);
-          const allNV = resNV.data.data || [];
+          const allNV = Array.isArray(resNV) ? resNV : [];
           setListNhanVien(allNV);
           setFilteredNhanVien(allNV);
-          setListPhongBan(Array.isArray(resPB.data) ? resPB.data : []);
-          setListChucVu(Array.isArray(resCV.data) ? resCV.data : []);
+          setListPhongBan(Array.isArray(resPB) ? resPB : []);
+          setListChucVu(Array.isArray(resCV) ? resCV : []);
         } catch (error) { console.error(error); }
       };
       fetchCatalogs();
@@ -66,8 +66,18 @@ const BaoCaoThuNhap = () => {
 
   // 3. Handlers
   const handleSearch = () => {
-    if (targetMaNV) handleFetchDetail(targetMaNV);
-    else handleFetchSummary();
+    // TRƯỜNG HỢP 1: Nếu là Nhân viên (Staff) -> Luôn xem của chính mình
+    if (!isAdminOrHR) {
+        handleFetchDetail(user.ma_nhan_vien);
+        return;
+    }
+
+    // TRƯỜNG HỢP 2: Nếu là Admin/HR
+    if (targetMaNV) {
+      handleFetchDetail(targetMaNV);
+    } else {
+      handleFetchSummary();
+    }
   };
 
   const handleFetchDetail = async (maNV) => {
@@ -119,9 +129,9 @@ const BaoCaoThuNhap = () => {
       </h2>
       
       {/* FILTER SECTION */}
-      {isAdminOrHR && (
+      {(
         <SalaryFilter 
-          listPhongBan={listPhongBan} listChucVu={listChucVu} filteredNhanVien={filteredNhanVien}
+          isAdmin={isAdminOrHR} listPhongBan={listPhongBan} listChucVu={listChucVu} filteredNhanVien={filteredNhanVien}
           selectedPhong={selectedPhong} setSelectedPhong={setSelectedPhong}
           selectedChucVu={selectedChucVu} setSelectedChucVu={setSelectedChucVu}
           targetMaNV={targetMaNV} setTargetMaNV={setTargetMaNV}
