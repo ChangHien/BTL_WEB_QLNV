@@ -1,3 +1,4 @@
+
 👨‍💻 Giới thiệu
 Nhánh này bao gồm:
 - Foundation Tasks: Thiết lập cấu trúc thư mục, layout chính, routing, API client, authentication.
@@ -67,4 +68,5 @@ src/
 4. Báo cáo thu nhập
 - UI: BaoCaoThuNhap.jsx (biểu đồ + bảng báo cáo).
 - API: baoCaoApi.js.
+
 
