@@ -1,42 +1,34 @@
 import axiosClient from "./axiosClient";
 
 const chamCongApi = {
-
-  getAll: async () => {
-    const res = await axiosClient.get(`/chamcong`);
-    return res?.data?.data ?? res?.data ?? [];
-  },
-
-
-  create: async (payload) => {
-    const res = await axiosClient.post(`/chamcong`, payload);
-    return res?.data;
-  },
-
-
-  update: async (id, payload) => {
-    const res = await axiosClient.put(`/chamcong/${id}`, payload);
-    return res?.data;
-  },
-
-
-  delete: async (id) => {
-    const res = await axiosClient.delete(`/chamcong/${id}`);
-    return res?.data;
-  },
-
-
-  getLichSu: async (maNhanVien) => {
-    const res = await axiosClient.get(`/chamcong/lich-su/${maNhanVien}`);
-    return res?.data?.data ?? res?.data ?? [];
-  },
-
-
+  // Lấy tất cả (summary)
   getThongKeBieuDo: async (thang, nam) => {
-    const res = await axiosClient.get(`/chamcong/thong-ke-bieu-do`, {
-      params: { thang, nam },
-    });
+    const res = await axiosClient.get(`/chamcong/summary`, { params: { thang, nam } });
     return res?.data?.data ?? res?.data ?? [];
+  },
+
+  // Lịch sử theo nhân viên
+  getByNhanVien: async (maNhanVien, thang, nam) => {
+    const res = await axiosClient.get(`/chamcong/${maNhanVien}`, { params: { thang, nam } });
+    return res?.data?.data ?? res?.data ?? [];
+  },
+
+  // Check-in nhanh
+  checkIn: async (payload) => {
+    const res = await axiosClient.post(`/chamcong/check-in`, payload);
+    return res?.data;
+  },
+
+  // Check-out nhanh
+  checkOut: async (payload) => {
+    const res = await axiosClient.put(`/chamcong/check-out`, payload);
+    return res?.data;
+  },
+
+  // Full chấm công (HR/Admin)
+  createFull: async (payload) => {
+    const res = await axiosClient.post(`/chamcong/full`, payload);
+    return res?.data;
   },
 };
 

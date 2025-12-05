@@ -18,6 +18,7 @@ import "./ChamCongPage.scss";
 const { Option } = Select;
 
 const ChamCongPage = () => {
+  // ---------------- STATE ----------------
   const [listChamCong, setListChamCong] = useState([]);
   const [nhanVienList, setNhanVienList] = useState([]);
   const [form, setForm] = useState({
@@ -27,13 +28,21 @@ const ChamCongPage = () => {
     gio_ra: null,
   });
   const [loading, setLoading] = useState(false);
-
-  // Tồn tại: chọn tháng/năm để gọi API lịch sử
-  const [selectedMonth, setSelectedMonth] = useState(dayjs().month() + 1); // 1..12
+  const [selectedMonth, setSelectedMonth] = useState(dayjs().month() + 1);
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
 
-  // Load danh sách nhân viên (FE vẫn cần để chọn)
+  // ---------------- ROLE / USER ----------------
+  const userRole = localStorage.getItem("role"); // ADMIN / HR / NHAN_VIEN
+  const currentUserId = localStorage.getItem("userId"); 
+
+  // ---------------- LOAD NHÂN VIÊN ----------------
   const loadNhanVien = async () => {
+    if (userRole === "NHAN_VIEN") {
+      // Nhân viên chỉ thấy mình
+      setNhanVienList([{ ma_nhan_vien: currentUserId, ten_nhan_vien: "Bạn" }]);
+      setForm({ ...form, ma_nhan_vien: currentUserId });
+      return;
+    }
     try {
       const nvRes = await nhanVienApi.getAll();
       setNhanVienList(nvRes);
@@ -46,7 +55,7 @@ const ChamCongPage = () => {
     loadNhanVien();
   }, []);
 
-  // Lấy lịch sử cho nhân viên đã chọn + tháng/năm
+  // ---------------- LOAD LỊCH SỬ ----------------
   const loadHistory = async (ma_nv) => {
     if (!ma_nv) {
       setListChamCong([]);
@@ -55,8 +64,6 @@ const ChamCongPage = () => {
     setLoading(true);
     try {
       const res = await chamCongApi.getByNhanVien(ma_nv, selectedMonth, selectedYear);
-      // res là mảng các bản ghi: [{ id, ma_nhan_vien, ngay_lam, gio_vao, gio_ra, trang_thai_ca }, ...]
-      // Nếu bạn muốn hiển thị tên nhân viên, join từ nhanVienList
       const withNames = res.map((r) => {
         const nv = nhanVienList.find((n) => n.ma_nhan_vien === r.ma_nhan_vien);
         return {
@@ -73,39 +80,35 @@ const ChamCongPage = () => {
     }
   };
 
-  // Khi thay đổi nhân viên hoặc tháng/năm
   useEffect(() => {
-    if (form.ma_nhan_vien) {
-      loadHistory(form.ma_nhan_vien);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMonth, selectedYear]);
+    if (form.ma_nhan_vien) loadHistory(form.ma_nhan_vien);
+  }, [selectedMonth, selectedYear, nhanVienList]);
 
+  // ---------------- FORM ----------------
   const handleChange = (name, value) => {
     setForm({ ...form, [name]: value });
   };
 
+  // Full chấm công (HR/Admin)
   const handleSubmit = async () => {
     if (!form.ma_nhan_vien || !form.ngay_lam || !form.gio_vao || !form.gio_ra) {
       return message.warning("Vui lòng điền đầy đủ thông tin");
     }
     try {
-      // Gọi backend POST /chamcong/full (HR/Admin). Nếu user không có quyền, backend trả lỗi 403.
       await chamCongApi.createFull({
         ma_nhan_vien: form.ma_nhan_vien,
         ngay_lam: form.ngay_lam.format("YYYY-MM-DD"),
         gio_vao: form.gio_vao.format("HH:mm:ss"),
         gio_ra: form.gio_ra.format("HH:mm:ss"),
       });
-      message.success("Chấm công thành công (full).");
-      // reload history nếu đang xem nhân viên này
-      if (form.ma_nhan_vien) loadHistory(form.ma_nhan_vien);
+      message.success("Chấm công thành công (Full).");
+      loadHistory(form.ma_nhan_vien);
     } catch (err) {
       message.error(err.response?.data?.message || "Lỗi khi chấm công");
     }
   };
 
-  // Quick check-in / check-out functions (nếu bạn muốn dùng)
+  // Quick check-in
   const handleCheckIn = async () => {
     if (!form.ma_nhan_vien) return message.warning("Chọn nhân viên để check-in");
     try {
@@ -115,12 +118,13 @@ const ChamCongPage = () => {
         gio_vao: form.gio_vao ? form.gio_vao.format("HH:mm:ss") : dayjs().format("HH:mm:ss"),
       });
       message.success("Check-in thành công");
-      if (form.ma_nhan_vien) loadHistory(form.ma_nhan_vien);
+      loadHistory(form.ma_nhan_vien);
     } catch (err) {
       message.error(err.response?.data?.message || "Lỗi check-in");
     }
   };
 
+  // Quick check-out
   const handleCheckOut = async () => {
     if (!form.ma_nhan_vien) return message.warning("Chọn nhân viên để check-out");
     try {
@@ -130,12 +134,13 @@ const ChamCongPage = () => {
         gio_ra: form.gio_ra ? form.gio_ra.format("HH:mm:ss") : dayjs().format("HH:mm:ss"),
       });
       message.success("Check-out thành công");
-      if (form.ma_nhan_vien) loadHistory(form.ma_nhan_vien);
+      loadHistory(form.ma_nhan_vien);
     } catch (err) {
       message.error(err.response?.data?.message || "Lỗi check-out");
     }
   };
 
+  // ---------------- TABLE ----------------
   const columns = [
     { title: "Nhân viên", dataIndex: "ten_nhan_vien", key: "ten_nhan_vien" },
     { title: "Ngày làm", dataIndex: "ngay_lam", key: "ngay_lam" },
@@ -144,30 +149,33 @@ const ChamCongPage = () => {
     { title: "Trạng thái", dataIndex: "trang_thai_ca", key: "trang_thai_ca" },
   ];
 
+  // ---------------- RENDER ----------------
   return (
     <div className="ChamCongPage">
       <h2>📝 Quản lý Chấm Công</h2>
 
       <Card title="Chấm công mới / thao tác nhanh" style={{ marginBottom: 24 }}>
         <Row gutter={16}>
-          <Col span={6}>
-            <Select
-              placeholder="Chọn nhân viên"
-              style={{ width: "100%" }}
-              value={form.ma_nhan_vien}
-              onChange={(val) => {
-                handleChange("ma_nhan_vien", val);
-                // load ngay khi chọn nhân viên
-                setTimeout(() => loadHistory(val), 0);
-              }}
-            >
-              {nhanVienList.map((nv) => (
-                <Option key={nv.ma_nhan_vien} value={nv.ma_nhan_vien}>
-                  {nv.ten_nhan_vien}
-                </Option>
-              ))}
-            </Select>
-          </Col>
+          {/* Chỉ HR/Admin mới chọn nhân viên khác */}
+          {(userRole === "HR" || userRole === "ADMIN") && (
+            <Col span={6}>
+              <Select
+                placeholder="Chọn nhân viên"
+                style={{ width: "100%" }}
+                value={form.ma_nhan_vien}
+                onChange={(val) => {
+                  handleChange("ma_nhan_vien", val);
+                  setTimeout(() => loadHistory(val), 0);
+                }}
+              >
+                {nhanVienList.map((nv) => (
+                  <Option key={nv.ma_nhan_vien} value={nv.ma_nhan_vien}>
+                    {nv.ten_nhan_vien}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+          )}
 
           <Col span={4}>
             <DatePicker
@@ -211,16 +219,19 @@ const ChamCongPage = () => {
         </Row>
 
         <Row style={{ marginTop: 16 }} gutter={12}>
-          <Col>
-            <Button type="primary" onClick={handleSubmit}>
-              Ghi nhận (Full) {/* dùng cho HR */}
-            </Button>
-          </Col>
+          {/* HR/Admin mới được ghi Full */}
+          {(userRole === "HR" || userRole === "ADMIN") && (
+            <Col>
+              <Button type="primary" onClick={handleSubmit}>
+                Ghi nhận (Full)
+              </Button>
+            </Col>
+          )}
 
+          {/* Check-in / Check-out mọi người đều được */}
           <Col>
             <Button onClick={handleCheckIn}>Check-in</Button>
           </Col>
-
           <Col>
             <Button onClick={handleCheckOut}>Check-out</Button>
           </Col>
@@ -228,12 +239,7 @@ const ChamCongPage = () => {
       </Card>
 
       <Card title={`Danh sách chấm công - ${selectedMonth}/${selectedYear}`}>
-        <Table
-          columns={columns}
-          dataSource={listChamCong}
-          rowKey="id"
-          loading={loading}
-        />
+        <Table columns={columns} dataSource={listChamCong} rowKey="id" loading={loading} />
       </Card>
     </div>
   );
