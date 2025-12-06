@@ -1,22 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Spin, Button, Descriptions, Avatar, Tag, Divider, Statistic } from 'antd';
-import { 
-    UserOutlined, DollarCircleOutlined, IdcardOutlined, PhoneOutlined, 
-    MailOutlined, CheckCircleOutlined, WarningOutlined, ClockCircleOutlined 
-} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { RadialBarChart, RadialBar, Tooltip, ResponsiveContainer } from 'recharts';
 import nhanVienApi from '../../../api/nhanVienApi';
 import chamCongApi from '../../../api/chamCongApi';
 import { useAuth } from '../../../contexts/AuthContext';
+import { User, CreditCard, Clock, CheckCircle, AlertTriangle, DollarSign, Phone, Mail, Gift } from 'react-feather';
 
-// Map trạng thái từ Backend trả về
-const STATUS_MAP = {
-    DUNG_GIO: 'DungGio',
-    DI_MUON: 'DiMuon',
-    VE_SOM: 'VeSom'
-};
+const STATUS_MAP = { DUNG_GIO: 'DungGio', DI_MUON: 'DiMuon', VE_SOM: 'VeSom' };
 
 const EmployeeDashboard = () => {
   const { user } = useAuth();
@@ -24,194 +15,108 @@ const EmployeeDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [myProfile, setMyProfile] = useState(null);
   
-  // State dữ liệu biểu đồ
   const [attendanceData, setAttendanceData] = useState([]);
-  const [attendanceStats, setAttendanceStats] = useState({ 
-      totalDays: 0, 
-      lateDays: 0, 
-      onTimeDays: 0, 
-      earlyDays: 0 
-  });
+  const [attendanceStats, setAttendanceStats] = useState({ totalDays: 0, lateDays: 0, onTimeDays: 0, earlyDays: 0 });
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Lấy thông tin cá nhân
         const resProfile = await nhanVienApi.getById(user.ma_nhan_vien);
-        
         setMyProfile(resProfile.data); 
-
-        // 2. Lấy dữ liệu chấm công tháng hiện tại
         const currentMonth = dayjs().month() + 1;
         const currentYear = dayjs().year();
-        const resCC = await chamCongApi.getLichSu(user.ma_nhan_vien, currentMonth, currentYear);
-        const listCC = resCC.data?.data || [];
-
-        // 3. Xử lý số liệu
-        let late = 0;
-        let onTime = 0;
-        let early = 0;
-
-        listCC.forEach(cc => {
-            switch (cc.trang_thai_ca) {
-                case STATUS_MAP.DUNG_GIO:
-                    onTime++;
-                    break;
-                case STATUS_MAP.DI_MUON:
-                    late++;
-                    break;
-                case STATUS_MAP.VE_SOM:
-                    early++;
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        // Cập nhật thống kê số liệu 
-        setAttendanceStats({
-            totalDays: listCC.length,
-            lateDays: late,
-            onTimeDays: onTime,
-            earlyDays: early
-        });
-
-        // 4. Chuẩn bị dữ liệu cho biểu đồ 
-        const chartData = [];
+        const listCC = await chamCongApi.getByNhanVien(user.ma_nhan_vien, currentMonth, currentYear);
         
-        if (early > 0) chartData.push({ 
-            name: 'Về sớm', 
-            value: early, 
-            fill: '#ff4d4f' 
-        });
-        if (late > 0) chartData.push({ 
-            name: 'Đi muộn', 
-            value: late, 
-            fill: '#faad14' 
-        });
-        if (onTime > 0) chartData.push({ 
-            name: 'Đúng giờ', 
-            value: onTime, 
-            fill: '#52c41a' 
+        let late = 0, onTime = 0, early = 0;
+        listCC.forEach(cc => {
+            if (cc.trang_thai_ca === STATUS_MAP.DUNG_GIO) onTime++;
+            else if (cc.trang_thai_ca === STATUS_MAP.DI_MUON) late++;
+            else if (cc.trang_thai_ca === STATUS_MAP.VE_SOM) early++;
         });
 
+        setAttendanceStats({ totalDays: listCC.length, lateDays: late, onTimeDays: onTime, earlyDays: early });
+        const chartData = [];
+        if (early > 0) chartData.push({ name: 'Về sớm', value: early, fill: '#ff4d4f' });
+        if (late > 0) chartData.push({ name: 'Đi muộn', value: late, fill: '#faad14' });
+        if (onTime > 0) chartData.push({ name: 'Đúng giờ', value: onTime, fill: '#52c41a' });
         setAttendanceData(chartData);
-
-      } catch (error) {
-        console.error("Lỗi tải dữ liệu Dashboard:", error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (error) { console.error("Lỗi tải dữ liệu Dashboard:", error); } finally { setLoading(false); }
     };
-
     if (user) fetchData();
   }, [user]);
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 50 }}><Spin size="large" /></div>;
+  if (loading) return <div className="flex justify-center items-center h-[50vh]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>;
   if (!myProfile) return null;
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-      
-      {/* HEADER */}
-      <div style={{ marginBottom: 24, background: '#fff', padding: 24, borderRadius: 8, display: 'flex', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-        <Avatar size={80} icon={<UserOutlined />} style={{ backgroundColor: '#1890ff', marginRight: 24 }} />
+    <div className="max-w-5xl mx-auto p-4 md:p-6">
+      <div className="bg-white rounded-lg p-6 mb-6 shadow-sm border border-gray-100 flex items-center gap-6">
+        <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-inner">
+            <User size={40} />
+        </div>
         <div>
-          <h2 style={{ margin: 0 }}>Xin chào, {myProfile.ten_nhan_vien}!</h2>
-          <p style={{ color: '#888', margin: '4px 0 0 0' }}>
-            Mã NV: <Tag color="blue">{myProfile.ma_nhan_vien}</Tag>
-          </p>
+          <h2 className="text-2xl font-bold text-gray-800 m-0">Xin chào, {myProfile.ten_nhan_vien}!</h2>
+          <p className="text-gray-500 mt-1 flex items-center gap-2">Mã NV: <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-400">{myProfile.ma_nhan_vien}</span></p>
         </div>
       </div>
 
-      <Row gutter={24}>
-        {/* CỘT TRÁI: THÔNG TIN CHI TIẾT & BIỂU ĐỒ */}
-        <Col span={14} xs={24} md={14}>
-          <Card title={<span><IdcardOutlined /> Thông Tin Cá Nhân</span>} bordered={false} style={{ marginBottom: 16 }}>
-            <Descriptions column={1} bordered size="middle">
-              <Descriptions.Item label="Phòng Ban"><b>{myProfile.phongBan?.ten_phong || '---'}</b></Descriptions.Item>
-              <Descriptions.Item label="Chức Vụ"><b>{myProfile.chucVu?.ten_chuc_vu || '---'}</b></Descriptions.Item>
-              <Descriptions.Item label="Ngày Vào Làm">{myProfile.ngay_vao_lam ? dayjs(myProfile.ngay_vao_lam).format('DD/MM/YYYY') : '---'}</Descriptions.Item>
-              <Descriptions.Item label="Mức Lương CB"><span style={{ color: '#cf1322', fontWeight: 'bold' }}>{myProfile.muc_luong_co_ban ? Number(myProfile.muc_luong_co_ban).toLocaleString('vi-VN') : 0} VNĐ</span></Descriptions.Item>
-            </Descriptions>
-          </Card>
+      <div className="grid grid-cols-1 md:grid-cols-24 gap-6">
+        <div className="md:col-span-24 lg:col-span-14 flex flex-col gap-6">
+          <div className="card-custom">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><CreditCard size={20} className="text-primary"/> Thông Tin Cá Nhân</h3>
+            <div className="grid grid-cols-1 gap-y-3 text-sm">
+                <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Phòng Ban</span><span className="font-semibold text-gray-800">{myProfile.phongBan?.ten_phong || '---'}</span></div>
+                <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Chức Vụ</span><span className="font-semibold text-gray-800">{myProfile.chucVu?.ten_chuc_vu || '---'}</span></div>
+                <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Ngày Vào Làm</span><span className="font-semibold text-gray-800">{myProfile.ngay_vao_lam ? dayjs(myProfile.ngay_vao_lam).format('DD/MM/YYYY') : '---'}</span></div>
+                <div className="flex justify-between pt-1"><span className="text-gray-500">Mức Lương CB</span><span className="font-bold text-red-600 text-base">{myProfile.muc_luong_co_ban ? Number(myProfile.muc_luong_co_ban).toLocaleString('vi-VN') : 0} VNĐ</span></div>
+            </div>
+          </div>
 
-          {/* KHỐI THỐNG KÊ CHUYÊN CẦN */}
-          <Card title={<span><ClockCircleOutlined /> Thống Kê Tháng {dayjs().month() + 1}</span>} bordered={false}>
-            <Row align="middle">
-                {/* Phần Chú giải (Legend) */}
-                <Col span={10}>
-                    <Statistic title="Tổng ngày đi làm" value={attendanceStats.totalDays} suffix="ngày" />
-                    
-                    <div style={{ marginTop: 24 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, borderBottom: '1px dashed #f0f0f0', paddingBottom: 4 }}>
-                            <span style={{ color: '#52c41a', fontWeight: 500 }}><CheckCircleOutlined /> Đúng giờ:</span>
-                            <b>{attendanceStats.onTimeDays}</b>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, borderBottom: '1px dashed #f0f0f0', paddingBottom: 4 }}>
-                            <span style={{ color: '#faad14', fontWeight: 500 }}><WarningOutlined /> Đi muộn:</span>
-                            <b>{attendanceStats.lateDays}</b>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#ff4d4f', fontWeight: 500 }}><ClockCircleOutlined /> Về sớm:</span>
-                            <b>{attendanceStats.earlyDays}</b>
-                        </div>
+          <div className="card-custom">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><Clock size={20} className="text-primary"/> Thống Kê Tháng {dayjs().month() + 1}</h3>
+            <div className="flex flex-col sm:flex-row items-center">
+                <div className="w-full sm:w-1/2 p-2">
+                    <div className="mb-6"><div className="text-gray-500 text-xs uppercase">Tổng ngày đi làm</div><div className="text-3xl font-bold text-gray-800">{attendanceStats.totalDays} <span className="text-sm font-normal text-gray-400">ngày</span></div></div>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center text-sm border-b border-dashed border-gray-200 pb-1"><span className="text-green-600 font-medium flex items-center gap-1"><CheckCircle size={14}/> Đúng giờ:</span><span className="font-bold">{attendanceStats.onTimeDays}</span></div>
+                        <div className="flex justify-between items-center text-sm border-b border-dashed border-gray-200 pb-1"><span className="text-yellow-500 font-medium flex items-center gap-1"><AlertTriangle size={14}/> Đi muộn:</span><span className="font-bold">{attendanceStats.lateDays}</span></div>
+                        <div className="flex justify-between items-center text-sm"><span className="text-red-500 font-medium flex items-center gap-1"><Clock size={14}/> Về sớm:</span><span className="font-bold">{attendanceStats.earlyDays}</span></div>
                     </div>
-                </Col>
-                
-                {/* Phần Biểu đồ nằm bên phải  */}
-                <Col span={14} style={{ height: 250 }}>
+                </div>
+                <div className="w-full sm:w-1/2 h-[250px]">
                     {attendanceData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                            <RadialBarChart 
-                                cx="50%" 
-                                cy="50%" 
-                                innerRadius="30%" 
-                                outerRadius="100%" 
-                                barSize={20} 
-                                data={attendanceData}
-                            >
-                                <RadialBar
-                                    minAngle={15}
-                                    background={{ fill: '#f5f5f5' }} 
-                                    clockWise
-                                    dataKey="value"
-                                    cornerRadius={10}
-                                />
-                                <Tooltip formatter={(value, name) => [`${value} ngày`, name]} />
+                            <RadialBarChart cx="50%" cy="50%" innerRadius="30%" outerRadius="100%" barSize={20} data={attendanceData}>
+                                <RadialBar minAngle={15} background={{ fill: '#f3f4f6' }} clockWise dataKey="value" cornerRadius={10}/>
+                                <Tooltip />
                             </RadialBarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div style={{ 
-                            height: '100%', display: 'flex', alignItems: 'center', 
-                            justifyContent: 'center', flexDirection: 'column', color: '#ccc' 
-                        }}>
-                            <ClockCircleOutlined style={{ fontSize: 40, marginBottom: 10 }} />
-                            <span>Chưa có dữ liệu</span>
-                        </div>
+                        <div className="h-full flex flex-col items-center justify-center text-gray-300"><Clock size={48} className="mb-2"/><span>Chưa có dữ liệu</span></div>
                     )}
-                </Col>
-            </Row>
-          </Card>
-        </Col>
+                </div>
+            </div>
+          </div>
+        </div>
 
-        {/* CỘT PHẢI: SHORTCUT */}
-        <Col span={10} xs={24} md={10}>
-          <Card title="Truy Cập Nhanh" bordered={false} style={{ height: '100%' }}>
-            <Button block size="large" icon={<DollarCircleOutlined />} style={{ height: 50, marginBottom: 16, borderColor: '#52c41a', color: '#52c41a' }} onClick={() => navigate('/bao-cao')}>
-                Xem Phiếu Lương
-            </Button>
-            <Button block size="large" type="primary" ghost style={{ height: 50 }} onClick={() => navigate('/thuong-phat')}>
-                Xem Thưởng / Phạt
-            </Button>
-            
-            <Divider orientation="left" style={{ fontSize: 12, color: '#999' }}>Hỗ trợ</Divider>
-            <p><PhoneOutlined /> Hotline: 1900 1234</p>
-            <p><MailOutlined /> Email: ms@company.com</p>
-          </Card>
-        </Col>
-      </Row>
+        <div className="md:col-span-24 lg:col-span-10">
+          <div className="card-custom h-full flex flex-col">
+            <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-2">Truy Cập Nhanh</h3>
+            <button onClick={() => navigate('/bao-cao')} className="w-full mb-4 py-3 px-4 border border-green-500 text-green-600 rounded-lg hover:bg-green-50 font-semibold transition-colors flex items-center justify-center gap-2">
+                <DollarSign size={18}/> Xem Phiếu Lương
+            </button>
+            <button onClick={() => navigate('/thuong-phat')} className="w-full mb-8 py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary-hover font-semibold transition-colors flex items-center justify-center gap-2">
+                <Gift size={18}/> Xem Thưởng / Phạt
+            </button>
+            <div className="mt-auto border-t border-gray-100 pt-4">
+                <span className="text-xs font-bold text-gray-400 uppercase block mb-3">Hỗ trợ</span>
+                <p className="text-gray-600 text-sm mb-2 flex items-center gap-2"><Phone size={14}/> Hotline: <span className="font-medium text-black">1900 1234</span></p>
+                <p className="text-gray-600 text-sm flex items-center gap-2"><Mail size={14}/> Email: <span className="font-medium text-black">ms@company.com</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,41 +1,31 @@
 import React from 'react';
-import { Card, Row, Col, Statistic } from 'antd';
-import { 
-  BankOutlined, TeamOutlined, PartitionOutlined, DollarOutlined 
-} from '@ant-design/icons';
+import { Users, Briefcase, Layers, DollarSign } from 'react-feather';
 
 const StatCard = ({ title, value, icon, color, suffix, isCurrency }) => (
-  <Card variant="borderless" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.05)', height: '100%' }}>
-      <Statistic 
-          title={<span style={{ fontWeight: 600, color: '#888' }}>{title}</span>} 
-          value={value} 
-          precision={isCurrency ? 0 : 0}
-          valueStyle={{ color: color, fontWeight: 'bold', fontSize: 24 }} 
-          prefix={icon} 
-          suffix={suffix}
-          formatter={isCurrency ? (val) => 
-            new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val) 
-            : undefined}
-      />
-  </Card>
+  <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow h-full flex flex-col justify-between">
+      <div className="flex justify-between items-start mb-2">
+          <span className="font-semibold text-gray-500 text-sm uppercase tracking-wider">{title}</span>
+          <span style={{ color: color }} className="opacity-80">{icon}</span>
+      </div>
+      <div className="flex items-baseline gap-1">
+          <span className="text-3xl font-extrabold text-gray-800" style={{ color: color }}>
+            {isCurrency 
+              ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+              : value}
+          </span>
+          {suffix && <span className="text-gray-400 text-sm font-medium">{suffix}</span>}
+      </div>
+  </div>
 );
 
 const GeneralStats = ({ stats }) => {
   return (
-    <Row gutter={16} style={{ marginBottom: 8 }}>
-      <Col span={6}>
-        <StatCard title="Tổng Nhân Viên" value={stats.totalNhanVien} icon={<TeamOutlined />} color="#3f8600" suffix="người" />
-      </Col>
-      <Col span={6}>
-        <StatCard title="Tổng Phòng Ban" value={stats.totalPhongBan} icon={<BankOutlined />} color="#1890ff" suffix="phòng" />
-      </Col>
-      <Col span={6}>
-        <StatCard title="Tổng Chức Vụ" value={stats.totalChucVu} icon={<PartitionOutlined />} color="#722ed1" suffix="vị trí" />
-      </Col>
-      <Col span={6}>
-        <StatCard title="Quỹ Lương Tháng" value={stats.totalSalary} icon={<DollarOutlined />} color="#cf1322" isCurrency={true} />
-      </Col>
-    </Row>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <StatCard title="Tổng Nhân Viên" value={stats.totalNhanVien} icon={<Users size={24}/>} color="#3f8600" suffix="người" />
+      <StatCard title="Tổng Phòng Ban" value={stats.totalPhongBan} icon={<Briefcase size={24}/>} color="#1890ff" suffix="phòng" />
+      <StatCard title="Tổng Chức Vụ" value={stats.totalChucVu} icon={<Layers size={24}/>} color="#722ed1" suffix="vị trí" />
+      <StatCard title="Quỹ Lương Tháng" value={stats.totalSalary} icon={<DollarSign size={24}/>} color="#cf1322" isCurrency={true} />
+    </div>
   );
 };
 
