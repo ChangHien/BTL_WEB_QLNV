@@ -1,55 +1,31 @@
+@layer components {
+  /* --- CARD --- */
+  .card-custom {
+    @apply bg-white rounded-xl shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover p-6 border border-gray-100;
+  }
 
-/* Card */
-.ant-card {
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-.ant-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
+  /* --- BUTTONS --- */
+  .btn-primary {
+    @apply bg-primary text-white font-semibold py-2 px-4 rounded shadow-sm transition-all duration-200 
+    hover:bg-primary-hover active:scale-95 active:bg-primary-active focus:outline-none focus:ring-2 focus:ring-primary/50 flex items-center justify-center gap-2;
+  }
+  
+  .btn-netflix {
+    @apply w-full h-12 rounded bg-gradient-to-r from-primary to-[#0050b3] text-white font-bold text-base mt-6 border-none shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg;
+  }
 
-/* Table */
-.ant-table-wrapper .ant-table-thead > tr > th {
-  background: #fafafa !important;
-  font-weight: 700;
-  color: #444;
-}
-.ant-table-tbody > tr:hover > td {
-  background: #e6f7ff !important;
-}
-
-/* Sidebar & Logo */
-.ant-layout-sider {
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-}
-.ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
-  background-color: #1890ff !important;
-  font-weight: 600;
-}
-.logo {
-  transition: all 0.3s;
-  text-align: center;
-  overflow: hidden;
-  white-space: nowrap;
-  color: white;
-  font-weight: 800;
-  letter-spacing: 1px;
-  background: linear-gradient(45deg, #1890ff, #69c0ff) !important;
-}
-
-/* Header */
-.ant-layout-header {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  z-index: 9;
-}
-
-/* Button */
-.ant-btn {
-  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
-.ant-btn:active {
-  transform: scale(0.95);
+  /* --- INPUTS --- */
+  .input-netflix {
+    @apply w-full h-[50px] bg-black/60 border border-white/20 rounded text-white px-3 transition-colors duration-300 placeholder:text-gray-400;
+  }
+  
+  /* Viết tách ra ở đây */
+  .input-netflix:focus {
+    @apply bg-black/80 border-b-[3px] border-b-white outline-none ring-0;
+  }
+  
+  /* --- TABLES --- */
+  .table-header-cell {
+    @apply bg-gray-50 font-bold text-gray-700 px-4 py-3 text-left border-b border-gray-200;
+  }
 }

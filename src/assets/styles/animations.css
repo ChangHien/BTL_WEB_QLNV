@@ -1,23 +1,20 @@
+@layer utilities {
+  .animate-enter {
+    animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  .flex-center {
+    @apply flex justify-center items-center;
+  }
+}
+
 @keyframes slideUpFade {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
-}
-.animate-enter {
-  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes pulse-green {
   0% { box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.7); }
   70% { box-shadow: 0 0 0 6px rgba(82, 196, 26, 0); }
   100% { box-shadow: 0 0 0 0 rgba(82, 196, 26, 0); }
-}
-.status-badge { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-.status-active { background-color: #52c41a; animation: pulse-green 2s infinite; }
-.status-inactive { background-color: #ff4d4f; }
-
-/* Gradient Background */
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
