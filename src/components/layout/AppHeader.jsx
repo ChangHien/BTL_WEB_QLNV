@@ -1,55 +1,35 @@
-import React from 'react';
-import { Layout, Button, Dropdown, Space, Avatar, theme } from 'antd';
-import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, DownOutlined, LogoutOutlined } from '@ant-design/icons';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { User, ChevronDown, LogOut } from 'react-feather'; // Đã xóa icon Menu
 
-const { Header } = Layout;
-
-const AppHeader = ({ collapsed, setCollapsed }) => {
+const AppHeader = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { token: { colorBgContainer } } = theme.useToken();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-  const userMenu = {
-    items: [
-      {
-        key: 'logout',
-        label: 'Đăng xuất',
-        icon: <LogoutOutlined />,
-        danger: true,
-        onClick: () => {
-            logout();
-            navigate('/login');
-        }
-      },
-    ],
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
-    <Header style={{ padding: '0 24px', background: colorBgContainer, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Button
-        type="text"
-        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        onClick={() => setCollapsed(!collapsed)}
-        style={{ fontSize: '16px', width: 64, height: 64 }}
-      />
-
-      <Dropdown menu={userMenu} trigger={['click']}>
-        <a onClick={(e) => e.preventDefault()}>
-          <Space style={{ cursor: 'pointer' }}>
-            <Avatar style={{ backgroundColor: '#1890ff' }} icon={<UserOutlined />} />
-            <span style={{ fontWeight: 500 }}>
-                {user?.username} 
-                <span style={{ opacity: 0.6, fontWeight: 'normal', marginLeft: 5 }}>
-                    ({user?.role?.toUpperCase()})
-                </span>
-            </span>
-            <DownOutlined style={{ fontSize: '10px' }} />
-          </Space>
-        </a>
-      </Dropdown>
-    </Header>
+    <header className="h-16 bg-white    sticky top-0 z-20">
+      
+      
+    </header>
   );
 };
 
