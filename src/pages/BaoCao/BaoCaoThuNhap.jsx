@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { message, Spin } from 'antd';
 import dayjs from 'dayjs';
 import luongApi from '../../api/luongApi';
 import nhanVienApi from '../../api/nhanVienApi';
@@ -9,6 +8,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import SalaryFilter from './components/SalaryFilter';
 import SalaryDetail from './components/SalaryDetail';
 import SalarySummary from './components/SalarySummary';
+
+// Loading Component
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center py-20 flex-col gap-3">
+    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+    <span className="text-gray-500 text-sm">Đang xử lý dữ liệu...</span>
+  </div>
+);
 
 const BaoCaoThuNhap = () => {
   const { user } = useAuth();
@@ -66,13 +73,10 @@ const BaoCaoThuNhap = () => {
 
   // 3. Handlers
   const handleSearch = () => {
-    // TRƯỜNG HỢP 1: Nếu là Nhân viên (Staff) -> Luôn xem của chính mình
     if (!isAdminOrHR) {
         handleFetchDetail(user.ma_nhan_vien);
         return;
     }
-
-    // TRƯỜNG HỢP 2: Nếu là Admin/HR
     if (targetMaNV) {
       handleFetchDetail(targetMaNV);
     } else {
@@ -90,10 +94,9 @@ const BaoCaoThuNhap = () => {
       const res = await luongApi.getThongKeNam(maNV, year);
       setDetailData(res.data.chi_tiet_theo_thang);
       setTongNamDetail(res.data.tong_thu_nhap_nam);
-      if (isAdminOrHR) message.success(`Đã tải dữ liệu chi tiết.`);
     } catch (error) {
       setDetailData([]); setTongNamDetail(0);
-      message.info("Chưa có dữ liệu lương.");
+      alert("Chưa có dữ liệu lương.");
     } finally { setLoading(false); }
   };
 
@@ -104,11 +107,10 @@ const BaoCaoThuNhap = () => {
     try {
       const listTarget = filteredNhanVien;
       if (listTarget.length === 0) {
-        message.warning("Không tìm thấy nhân viên nào.");
+        alert("Không tìm thấy nhân viên nào.");
         setLoading(false); return;
       }
-      message.loading({ content: `Đang tính toán cho ${listTarget.length} nhân viên...`, key: 'calc' });
-
+      
       const promises = listTarget.map(async (nv) => {
         try {
           const res = await luongApi.getThongKeNam(nv.ma_nhan_vien, year);
@@ -118,47 +120,51 @@ const BaoCaoThuNhap = () => {
 
       const results = await Promise.all(promises);
       setSummaryData(results);
-      message.success({ content: "Hoàn tất!", key: 'calc' });
     } catch (error) { console.error(error); } finally { setLoading(false); }
   };
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-      <h2 style={{ marginBottom: 24 }}>
+    <div className="max-w-6xl mx-auto p-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
         {isAdminOrHR ? "🔍 Tra Cứu & Thống Kê Thu Nhập" : "📊 Báo Cáo Thu Nhập Cá Nhân"}
       </h2>
       
       {/* FILTER SECTION */}
-      {(
-        <SalaryFilter 
-          isAdmin={isAdminOrHR} listPhongBan={listPhongBan} listChucVu={listChucVu} filteredNhanVien={filteredNhanVien}
-          selectedPhong={selectedPhong} setSelectedPhong={setSelectedPhong}
-          selectedChucVu={selectedChucVu} setSelectedChucVu={setSelectedChucVu}
-          targetMaNV={targetMaNV} setTargetMaNV={setTargetMaNV}
-          year={year} setYear={setYear}
-          onSearch={handleSearch} loading={loading}
-        />
-      )}
+      <SalaryFilter 
+        isAdmin={isAdminOrHR} listPhongBan={listPhongBan} listChucVu={listChucVu} filteredNhanVien={filteredNhanVien}
+        selectedPhong={selectedPhong} setSelectedPhong={setSelectedPhong}
+        selectedChucVu={selectedChucVu} setSelectedChucVu={setSelectedChucVu}
+        targetMaNV={targetMaNV} setTargetMaNV={setTargetMaNV}
+        year={year} setYear={setYear}
+        onSearch={handleSearch} loading={loading}
+      />
 
       {/* CONTENT SECTION */}
-      <Spin spinning={loading} tip="Đang tải dữ liệu...">
-        {viewMode === 'detail' && (
-          <SalaryDetail 
-            data={detailData} total={tongNamDetail} name={viewingName} year={year} 
-            loading={loading} isAdmin={isAdminOrHR} onBack={handleFetchSummary}
-          />
-        )}
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <>
+          {viewMode === 'detail' && (
+            <SalaryDetail 
+              data={detailData} total={tongNamDetail} name={viewingName} year={year} 
+              loading={loading} isAdmin={isAdminOrHR} onBack={handleFetchSummary}
+            />
+          )}
 
-        {viewMode === 'summary' && isAdminOrHR && (
-          <SalarySummary data={summaryData} year={year} onViewDetail={handleFetchDetail} />
-        )}
+          {viewMode === 'summary' && isAdminOrHR && (
+            <SalarySummary data={summaryData} year={year} onViewDetail={handleFetchDetail} />
+          )}
 
-        {viewMode === 'none' && isAdminOrHR && (
-          <div style={{ textAlign: 'center', color: '#999', marginTop: 50 }}>Vui lòng chọn bộ lọc và bấm "Xem"</div>
-        )}
-      </Spin>
+          {viewMode === 'none' && isAdminOrHR && (
+            <div className="text-center text-gray-400 mt-12 py-12 border-2 border-dashed border-gray-200 rounded-lg">
+               <div className="text-4xl mb-2">👆</div>
+               Vui lòng chọn bộ lọc và bấm "Xem Báo Cáo"
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
-export default BaoCaoThuNhap; 
+export default BaoCaoThuNhap;
