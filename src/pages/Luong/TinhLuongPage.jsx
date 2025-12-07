@@ -112,17 +112,17 @@ const TinhLuongPage = () => {
 
       {/* RESULT TABLE  */}
       {Array.isArray(ketQua) && ketQua.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6 animate-fade-in-up">
+        <div className="max-w-7xl mx-auto bg-white border border-gray-200 rounded-xl p-5 mb-8 shadow-sm">
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 font-bold text-gray-700 flex items-center gap-2">
                 <Users size={20} /> BẢNG KẾT QUẢ TÍNH LƯƠNG
             </div>
             <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <table className="w-full text-sm text-left table-fixed">
                     <thead className="bg-gray-50 text-gray-700 font-bold uppercase text-xs border-b">
                         <tr>
-                            <th className="px-6 py-3">Mã NV</th>
+                            <th className="px-6 py-3 w-32">Mã NV</th> 
                             <th className="px-6 py-3">Họ và Tên</th>
-                            <th className="px-6 py-3 text-right">Tổng Thực Nhận</th>
+                            <th className="px-6 py-3 text-right w-48">Tổng Thực Nhận</th>
                         </tr>
                     </thead>
                     <tbody>

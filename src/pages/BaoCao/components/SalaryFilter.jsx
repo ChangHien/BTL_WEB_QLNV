@@ -128,7 +128,6 @@ const SearchableSelect = ({
                     >
                     <div className="flex flex-col">
                         <span>{itemLabel}</span>
-                        {!customDisplay && <span className="text-[10px] text-gray-400 uppercase">{itemVal}</span>}
                     </div>
                     {isSelected && <Check size={16} />}
                     </li>

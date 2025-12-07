@@ -156,10 +156,12 @@ const BaoCaoThuNhap = () => {
           )}
 
           {viewMode === 'none' && isAdminOrHR && (
-            <div className="text-center text-gray-400 mt-12 py-12 border-2 border-dashed border-gray-200 rounded-lg">
-               <div className="text-4xl mb-2">👆</div>
-               Vui lòng chọn bộ lọc và bấm "Xem Báo Cáo"
-            </div>
+            <div className="max-w-7xl mx-auto border-2 border-dashed border-gray-300 rounded-lg h-64 flex flex-col items-center justify-center text-gray-400 bg-white shadow-sm">
+          <div className="text-5xl mb-4 animate-bounce">👆</div>
+          <p className="text-lg font-medium text-gray-500">
+            Vui lòng chọn bộ lọc và xem báo cáo
+          </p>
+        </div>
           )}
         </>
       )}
