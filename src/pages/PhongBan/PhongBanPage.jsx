@@ -50,10 +50,10 @@ const PhongBanPage = () => {
   const handleOk = async () => {
     try {
       if (!formData.ma_phong || !formData.ten_phong) {
-          return alert("Vui lòng nhập đầy đủ thông tin");
+        return alert("Vui lòng nhập đầy đủ thông tin");
       }
       if (formData.ma_phong.length !== 3) {
-          return alert("Mã phòng phải đúng 3 ký tự");
+        return alert("Mã phòng phải đúng 3 ký tự");
       }
 
       setLoading(true);
@@ -117,7 +117,7 @@ const PhongBanPage = () => {
             <RefreshCw size={16} /> Làm mới
           </button>
           <button onClick={openCreateModal} className="btn-primary flex items-center gap-2">
-             <Plus size={18} /> Thêm mới
+            <Plus size={18} /> Thêm mới
           </button>
         </div>
       </div>
@@ -126,7 +126,7 @@ const PhongBanPage = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+            <thead className="text-sm text-white uppercase bg-gradient-to-r from-blue-500 to-sky-400 border-b border-blue-600">
               <tr>
                 <th className="px-6 py-4 font-bold w-[10%]">Mã</th>
                 <th className="px-6 py-4 font-bold w-[30%]">Tên Phòng Ban</th>
@@ -137,31 +137,30 @@ const PhongBanPage = () => {
             </thead>
             <tbody>
               {loading ? (
-                 <tr><td colSpan="5" className="text-center py-8 text-gray-500">Đang tải...</td></tr>
+                <tr><td colSpan="5" className="text-center py-8 text-gray-500">Đang tải...</td></tr>
               ) : data.length === 0 ? (
-                 <tr><td colSpan="5" className="text-center py-8 text-gray-500">Không có dữ liệu</td></tr>
+                <tr><td colSpan="5" className="text-center py-8 text-gray-500">Không có dữ liệu</td></tr>
               ) : (
                 data.map((record) => (
-                  <tr key={record.ma_phong} className="bg-white border-b hover:bg-blue-50 transition-colors">
+                  <tr key={record.ma_phong} className="bg-white border-b border-gray-100 hover:bg-blue-100 transition-colors duration-200">
                     <td className="px-6 py-4 font-bold text-gray-900">{record.ma_phong}</td>
                     <td className="px-6 py-4">{record.ten_phong}</td>
                     <td className="px-6 py-4 text-center">{record.nam_thanh_lap}</td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        record.trang_thai === 'HoatDong' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${record.trang_thai === 'HoatDong'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                        }`}>
                         {record.trang_thai === 'HoatDong' ? 'Hoạt động' : 'Ngừng'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center gap-4">
                         <button onClick={() => openEditModal(record)} className="text-blue-600 hover:text-blue-800">
-                            <Edit size={18} />
+                          <Edit size={18} />
                         </button>
                         <button onClick={() => handleDelete(record.ma_phong)} className="text-red-500 hover:text-red-700">
-                            <Trash2 size={18} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
@@ -174,8 +173,8 @@ const PhongBanPage = () => {
       </div>
 
       {/* MODAL */}
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onOk={handleOk}
         title={editingRecord ? "Sửa Phòng Ban" : "Thêm Phòng Ban"}
@@ -183,39 +182,39 @@ const PhongBanPage = () => {
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Mã Phòng <span className="text-red-500">*</span> (3 ký tự)</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               disabled={!!editingRecord}
               maxLength={3}
               value={formData.ma_phong}
-              onChange={(e) => setFormData({...formData, ma_phong: e.target.value.toUpperCase()})}
+              onChange={(e) => setFormData({ ...formData, ma_phong: e.target.value.toUpperCase() })}
               className={`input-std uppercase ${editingRecord ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tên Phòng <span className="text-red-500">*</span></label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={formData.ten_phong}
-              onChange={(e) => setFormData({...formData, ten_phong: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, ten_phong: e.target.value })}
               className="input-std"
             />
           </div>
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">Năm TL</label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 value={formData.nam_thanh_lap}
-                onChange={(e) => setFormData({...formData, nam_thanh_lap: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, nam_thanh_lap: e.target.value })}
                 className="input-std"
               />
             </div>
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">Trạng Thái</label>
-              <select 
+              <select
                 value={formData.trang_thai}
-                onChange={(e) => setFormData({...formData, trang_thai: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, trang_thai: e.target.value })}
                 className="input-std"
               >
                 <option value="HoatDong">Hoạt động</option>
