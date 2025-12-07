@@ -5,7 +5,7 @@ import { RadialBarChart, RadialBar, Tooltip, ResponsiveContainer } from 'rechart
 import nhanVienApi from '../../../api/nhanVienApi';
 import chamCongApi from '../../../api/chamCongApi';
 import { useAuth } from '../../../contexts/AuthContext';
-import { User, CreditCard, Clock, CheckCircle, AlertTriangle, DollarSign, Phone, Mail, Gift } from 'react-feather';
+import { User, CreditCard, Clock, CheckCircle, AlertTriangle, DollarSign, Phone, Mail, Gift, Calendar } from 'react-feather';
 
 const STATUS_MAP = { DUNG_GIO: 'DungGio', DI_MUON: 'DiMuon', VE_SOM: 'VeSom' };
 
@@ -50,71 +50,153 @@ const EmployeeDashboard = () => {
   if (!myProfile) return null;
 
   return (
-    <div className="max-w-5xl mx-auto p-4 md:p-6">
-      <div className="bg-white rounded-lg p-6 mb-6 shadow-sm border border-gray-100 flex items-center gap-6">
-        <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-inner">
-            <User size={40} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 m-0">Xin chào, {myProfile.ten_nhan_vien}!</h2>
-          <p className="text-gray-500 mt-1 flex items-center gap-2">Mã NV: <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-400">{myProfile.ma_nhan_vien}</span></p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-24 gap-6">
-        <div className="md:col-span-24 lg:col-span-14 flex flex-col gap-6">
-          <div className="card-custom">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><CreditCard size={20} className="text-primary"/> Thông Tin Cá Nhân</h3>
-            <div className="grid grid-cols-1 gap-y-3 text-sm">
-                <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Phòng Ban</span><span className="font-semibold text-gray-800">{myProfile.phongBan?.ten_phong || '---'}</span></div>
-                <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Chức Vụ</span><span className="font-semibold text-gray-800">{myProfile.chucVu?.ten_chuc_vu || '---'}</span></div>
-                <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Ngày Vào Làm</span><span className="font-semibold text-gray-800">{myProfile.ngay_vao_lam ? dayjs(myProfile.ngay_vao_lam).format('DD/MM/YYYY') : '---'}</span></div>
-                <div className="flex justify-between pt-1"><span className="text-gray-500">Mức Lương CB</span><span className="font-bold text-red-600 text-base">{myProfile.muc_luong_co_ban ? Number(myProfile.muc_luong_co_ban).toLocaleString('vi-VN') : 0} VNĐ</span></div>
+    <div className="min-h-screen bg-gray-50/50 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* HEADER INFO */}
+        <div className="bg-white rounded-xl p-6 mb-6 shadow-md border border-gray-100 flex flex-col md:flex-row items-center gap-6">
+            <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
+                <User size={36} />
             </div>
-          </div>
+            <div className="text-center md:text-left">
+            <h2 className="text-2xl font-bold text-gray-800 m-0">Xin chào, {myProfile.ten_nhan_vien}!</h2>
+            <div className="text-gray-500 mt-2 flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm">
+                <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-gray-600"><User size={12}/> {myProfile.ma_nhan_vien}</span>
+                <span className="hidden md:inline text-gray-300">|</span>
+                <span className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100">{myProfile.chucVu?.ten_chuc_vu || 'Nhân viên'}</span>
+            </div>
+            </div>
+        </div>
 
-          <div className="card-custom">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><Clock size={20} className="text-primary"/> Thống Kê Tháng {dayjs().month() + 1}</h3>
-            <div className="flex flex-col sm:flex-row items-center">
-                <div className="w-full sm:w-1/2 p-2">
-                    <div className="mb-6"><div className="text-gray-500 text-xs uppercase">Tổng ngày đi làm</div><div className="text-3xl font-bold text-gray-800">{attendanceStats.totalDays} <span className="text-sm font-normal text-gray-400">ngày</span></div></div>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center text-sm border-b border-dashed border-gray-200 pb-1"><span className="text-green-600 font-medium flex items-center gap-1"><CheckCircle size={14}/> Đúng giờ:</span><span className="font-bold">{attendanceStats.onTimeDays}</span></div>
-                        <div className="flex justify-between items-center text-sm border-b border-dashed border-gray-200 pb-1"><span className="text-yellow-500 font-medium flex items-center gap-1"><AlertTriangle size={14}/> Đi muộn:</span><span className="font-bold">{attendanceStats.lateDays}</span></div>
-                        <div className="flex justify-between items-center text-sm"><span className="text-red-500 font-medium flex items-center gap-1"><Clock size={14}/> Về sớm:</span><span className="font-bold">{attendanceStats.earlyDays}</span></div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* CỘT TRÁI: THÔNG TIN & THỐNG KÊ  */}
+            <div className="lg:col-span-2 flex flex-col gap-6">
+            
+            {/* Card 1: Thông tin cá nhân */}
+            <div className="card-custom shadow-md">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-3 flex items-center gap-2">
+                    <CreditCard size={20} className="text-primary"/> 
+                    Thông Tin Cơ Bản
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <span className="text-gray-500 block text-xs uppercase mb-1">Phòng Ban</span>
+                        <span className="font-semibold text-gray-800 text-base">{myProfile.phongBan?.ten_phong || '---'}</span>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <span className="text-gray-500 block text-xs uppercase mb-1">Ngày Vào Làm</span>
+                        <span className="font-semibold text-gray-800 text-base">{myProfile.ngay_vao_lam ? dayjs(myProfile.ngay_vao_lam).format('DD/MM/YYYY') : '---'}</span>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 md:col-span-2 flex justify-between items-center">
+                        <span className="text-gray-500 text-xs uppercase">Mức Lương Cơ Bản</span>
+                        <span className="font-bold text-blue-600 text-lg">{myProfile.muc_luong_co_ban ? Number(myProfile.muc_luong_co_ban).toLocaleString('vi-VN') : 0} VNĐ</span>
                     </div>
                 </div>
-                <div className="w-full sm:w-1/2 h-[250px]">
-                    {attendanceData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <RadialBarChart cx="50%" cy="50%" innerRadius="30%" outerRadius="100%" barSize={20} data={attendanceData}>
-                                <RadialBar minAngle={15} background={{ fill: '#f3f4f6' }} clockWise dataKey="value" cornerRadius={10}/>
-                                <Tooltip />
-                            </RadialBarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-gray-300"><Clock size={48} className="mb-2"/><span>Chưa có dữ liệu</span></div>
-                    )}
+            </div>
+
+            {/* Card 2: Thống kê chấm công */}
+            <div className="card-custom flex-1 shadow-md">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-3 flex items-center gap-2">
+                    <Clock size={20} className="text-primary"/> 
+                    Chấm Công Tháng {dayjs().month() + 1}
+                </h3>
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <div className="w-full sm:w-1/2">
+                        <div className="mb-6 bg-blue-50 p-4 rounded-xl text-center border border-blue-100">
+                            <div className="text-gray-500 text-xs uppercase font-semibold tracking-wider">Tổng ngày đi làm</div>
+                            <div className="text-4xl font-extrabold text-blue-600 mt-1">{attendanceStats.totalDays}</div>
+                        </div>
+                        <div className="space-y-3 pl-2">
+                            <div className="flex justify-between items-center text-sm"><span className="text-green-600 font-medium flex items-center gap-2"><CheckCircle size={16}/> Đúng giờ</span><span className="font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded">{attendanceStats.onTimeDays}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-yellow-600 font-medium flex items-center gap-2"><AlertTriangle size={16}/> Đi muộn</span><span className="font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">{attendanceStats.lateDays}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-red-500 font-medium flex items-center gap-2"><Clock size={16}/> Về sớm</span><span className="font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded">{attendanceStats.earlyDays}</span></div>
+                        </div>
+                    </div>
+                    <div className="w-full sm:w-1/2 h-[220px]">
+                        {attendanceData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadialBarChart cx="50%" cy="50%" innerRadius="30%" outerRadius="100%" barSize={20} data={attendanceData}>
+                                    <RadialBar minAngle={15} background={{ fill: '#f3f4f6' }} clockWise dataKey="value" cornerRadius={10}/>
+                                    <Tooltip />
+                                </RadialBarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-300 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                <Clock size={32} className="mb-2 opacity-50"/>
+                                <span className="text-sm">Chưa có dữ liệu</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-          </div>
+            </div>
+
+            {/* CỘT PHẢI: TRUY CẬP NHANH */}
+           <div className="lg:col-span-1">
+    <div className="card-custom h-full flex flex-col shadow-md">
+        <h3 className="text-lg font-bold text-gray-800 mb-5 border-b pb-3">Truy Cập Nhanh</h3>
+        
+        <div className="flex flex-col gap-4">
+            
+            {/* BUTTON 1: CHẤM CÔNG */}
+            <button 
+                onClick={() => navigate('/cham-cong')} 
+                className="relative group w-full overflow-hidden rounded-xl p-[4px] focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-2"
+            >
+                <span className="absolute inset-[-1000%] animate-[spin_1s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#fb923c_0%,#ea580c_50%,#fb923c_100%)]" />
+                
+                <span className="inline-flex h-full w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-white px-4 py-4 text-sm font-bold text-orange-700 backdrop-blur-3xl transition-all group-hover:bg-orange-50 group-hover:shadow-md">
+                    <div className="p-1.5 bg-orange-50 rounded-full text-orange-600 shadow-sm border border-orange-200 group-hover:bg-white transition-colors">
+                        <Calendar size={18}/>
+                    </div>
+                    <span>Chấm Công Ngay</span>
+                </span>
+            </button>
+
+            {/* BUTTON 2: PHIẾU LƯƠNG  */}
+            <button 
+                onClick={() => navigate('/bao-cao')} 
+                className="relative group w-full overflow-hidden rounded-xl p-[4px] focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
+            >
+                <span className="absolute inset-[-1000%] animate-[spin_1s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#4ade80_0%,#16a34a_50%,#4ade80_100%)]" />
+                <span className="inline-flex h-full w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-white px-4 py-4 text-sm font-bold text-green-700 backdrop-blur-3xl transition-all group-hover:bg-green-50 group-hover:shadow-md">
+                    <div className="p-1.5 bg-green-50 rounded-full text-green-600 shadow-sm border border-green-200 group-hover:bg-white transition-colors">
+                        <DollarSign size={18}/>
+                    </div>
+                    <span>Xem Phiếu Lương</span>
+                </span>
+            </button>
+
+            {/* BUTTON 3: THƯỞNG PHẠT  */}
+            <button 
+                onClick={() => navigate('/thuong-phat')} 
+                className="relative group w-full overflow-hidden rounded-xl p-[4px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+            >
+                <span className="absolute inset-[-1000%] animate-[spin_1s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#60a5fa_0%,#2563eb_50%,#60a5fa_100%)]" />
+                <span className="inline-flex h-full w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-white px-4 py-4 text-sm font-bold text-blue-700 backdrop-blur-3xl transition-all group-hover:bg-blue-50 group-hover:shadow-md">
+                    <div className="p-1.5 bg-blue-50 rounded-full text-blue-600 shadow-sm border border-blue-200 group-hover:bg-white transition-colors">
+                        <Gift size={18}/>
+                    </div>
+                    <span>Xem Thưởng / Phạt</span>
+                </span>
+            </button>
+
         </div>
 
-        <div className="md:col-span-24 lg:col-span-10">
-          <div className="card-custom h-full flex flex-col">
-            <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-2">Truy Cập Nhanh</h3>
-            <button onClick={() => navigate('/bao-cao')} className="w-full mb-4 py-3 px-4 border border-green-500 text-green-600 rounded-lg hover:bg-green-50 font-semibold transition-colors flex items-center justify-center gap-2">
-                <DollarSign size={18}/> Xem Phiếu Lương
-            </button>
-            <button onClick={() => navigate('/thuong-phat')} className="w-full mb-8 py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary-hover font-semibold transition-colors flex items-center justify-center gap-2">
-                <Gift size={18}/> Xem Thưởng / Phạt
-            </button>
-            <div className="mt-auto border-t border-gray-100 pt-4">
-                <span className="text-xs font-bold text-gray-400 uppercase block mb-3">Hỗ trợ</span>
-                <p className="text-gray-600 text-sm mb-2 flex items-center gap-2"><Phone size={14}/> Hotline: <span className="font-medium text-black">1900 1234</span></p>
-                <p className="text-gray-600 text-sm flex items-center gap-2"><Mail size={14}/> Email: <span className="font-medium text-black">ms@company.com</span></p>
+        <div className="mt-auto border-t border-gray-100 pt-5 text-center sm:text-left">
+            <span className="text-xs font-bold text-gray-400 uppercase block mb-3">Hỗ trợ nhân viên</span>
+            <div className="space-y-2">
+                <p className="text-gray-600 text-sm flex items-center gap-3 justify-center sm:justify-start hover:text-blue-600 transition-colors cursor-pointer">
+                    <span className="p-1.5 bg-gray-100 rounded-full"><Phone size={14}/></span> 
+                    <span className="font-medium">1900 1234</span>
+                </p>
+                <p className="text-gray-600 text-sm flex items-center gap-3 justify-center sm:justify-start hover:text-blue-600 transition-colors cursor-pointer">
+                    <span className="p-1.5 bg-gray-100 rounded-full"><Mail size={14}/></span> 
+                    <span className="font-medium">hr@company.com</span>
+                </p>
             </div>
-          </div>
+        </div>
+    </div>
+</div>
         </div>
       </div>
     </div>
