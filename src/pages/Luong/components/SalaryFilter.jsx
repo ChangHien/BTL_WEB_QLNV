@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import dayjs from 'dayjs';
-import { Search, ChevronDown, User, X, Check, Layers, Briefcase, Cpu, Calendar } from 'react-feather';
+import { Search, ChevronDown, User, X, Check, Layers, Briefcase, Cpu } from 'react-feather';
+import CustomMonthPicker from './CustomMonthPicker'; 
 
 const SearchableSelect = ({ 
   options = [], 
@@ -141,27 +141,6 @@ const SalaryFilter = ({
 
   const labelClass = "block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1";
 
-  // Tạo danh sách kỳ lương
-  const generateMonthOptions = () => {
-    const options = [];
-    const current = dayjs().subtract(6, 'month'); 
-    for (let i = 0; i < 18; i++) {
-        const date = current.add(i, 'month');
-        options.push({
-            label: date.format('MM/YYYY'), 
-            value: date.format('YYYY-MM-01') 
-        });
-    }
-    return options.reverse(); 
-  };
-  const monthOptions = generateMonthOptions();
-
-  const handleSelectPeriod = (val) => {
-      if (val) setSelectedMonth(dayjs(val));
-      else setSelectedMonth(dayjs());
-  };
-  const currentPeriodValue = selectedMonth ? selectedMonth.format('YYYY-MM-01') : '';
-
   return (
     <div className="max-w-7xl mx-auto bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
       
@@ -213,14 +192,10 @@ const SalaryFilter = ({
 
         <div className="col-span-1">
           <label className={labelClass}>Kỳ lương</label>
-          <SearchableSelect 
-            options={monthOptions}
-            value={currentPeriodValue}
-            onChange={handleSelectPeriod}
-            labelKey="label"
-            valueKey="value"
+          <CustomMonthPicker 
+            value={selectedMonth}
+            onChange={setSelectedMonth}
             placeholder="Chọn kỳ..."
-            icon={Calendar}
           />
         </div>
 
