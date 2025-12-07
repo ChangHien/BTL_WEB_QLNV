@@ -1,136 +1,148 @@
 import * as chamCongService from '../services/chamCongService.js';
-import db from '../models/index.js';
 import moment from 'moment';
 
-const ChamCong = db.ChamCong;
-
+/* ==========================
+ *  CHECK-IN (Dùng giờ server)
+ * ========================== */
 export const checkIn = async (req, res) => {
-    let { ma_nhan_vien, ngay_lam, gio_vao } = req.body;
+    const { ma_nhan_vien } = req.body;
 
-    if (!ngay_lam) {
-        ngay_lam = moment().format('YYYY-MM-DD');
+    if (!ma_nhan_vien) {
+        return res.status(400).send({ message: "Thiếu mã nhân viên." });
     }
-    
-    if (!ma_nhan_vien || !gio_vao) {
-        return res.status(400).send({ message: "Thiếu mã nhân viên hoặc giờ vào." });
-    }
+
+    const ngay_lam = moment().format('YYYY-MM-DD');
+    const gio_vao = moment().format('HH:mm:ss'); // giờ thực server
 
     try {
-        // Gọi Service tạo bản ghi mới (gio_ra = null, trang_thai_ca = 'DangLam')
         const newRecord = await chamCongService.createChamCongRecord(
-            ma_nhan_vien, ngay_lam, gio_vao, null 
+            ma_nhan_vien,
+            ngay_lam,
+            gio_vao,
+            null // Check-in ⇒ không có giờ ra
         );
 
-        res.status(201).send({ 
-            message: "Check-in thành công! Đang chờ Check-out.", 
-            data: newRecord 
+        res.status(201).send({
+            message: "Check-in thành công! Đang chờ Check-out.",
+            data: newRecord
         });
 
     } catch (error) {
-        if (error.message.includes("Giờ làm đã ghi nhận bị chồng lấn")) {
-             return res.status(400).send({ message: "Đã có ca làm đang diễn ra. Vui lòng Check-out trước." });
+        if (error.message.includes("Bạn đã check-in rồi")) {
+            return res.status(400).send({ message: "Bạn đã check-in và chưa check-out." });
         }
         res.status(500).send({ message: "Lỗi Check-in: " + error.message });
     }
 };
 
+
+/* ==========================
+ *  CHECK-OUT (Dùng giờ server)
+ * ========================== */
 export const checkOut = async (req, res) => {
-    let { ma_nhan_vien, ngay_lam, gio_ra } = req.body;
+    const { ma_nhan_vien } = req.body;
 
-    if (!ngay_lam) {
-        ngay_lam = moment().format('YYYY-MM-DD');
+    if (!ma_nhan_vien) {
+        return res.status(400).send({ message: "Thiếu mã nhân viên." });
     }
 
-    if (!ma_nhan_vien || !gio_ra) {
-        return res.status(400).send({ message: "Thiếu mã nhân viên hoặc giờ ra." });
-    }
+    const ngay_lam = moment().format('YYYY-MM-DD');
+    const gio_ra = moment().format('HH:mm:ss'); // giờ thực server
 
     try {
-        // Gọi Service cập nhật gio_ra và tính toán chuyên cần
         const updatedRecord = await chamCongService.updateGioRaAndCheckChuyenCan(
-            ma_nhan_vien, ngay_lam, gio_ra
+            ma_nhan_vien,
+            ngay_lam,
+            gio_ra
         );
-        
-        res.send({ 
-            message: `Check-out thành công. Trạng thái ca: ${updatedRecord.trang_thai_ca}`, 
-            data: updatedRecord 
+
+        res.send({
+            message: `Check-out thành công. Trạng thái ca: ${updatedRecord.trang_thai_ca}`,
+            data: updatedRecord
         });
 
     } catch (error) {
-        if (error.message.includes("Không tìm thấy bản ghi Check-in chưa kết thúc")) {
-            return res.status(404).send({ message: "Không tìm thấy ca làm đang hoạt động để Check-out." });
+        if (error.message.includes("Không tìm thấy bản ghi Check-in")) {
+            return res.status(404).send({ message: "Không có bản ghi Check-in cần Check-out." });
         }
         res.status(500).send({ message: "Lỗi Check-out: " + error.message });
     }
 };
 
-// CHỨC NĂNG 3: HR GHI NHẬN CA LÀM HOÀN CHỈNH (POST /api/chamcong/full)
 
+/* ==========================================
+ *  HR TẠO CA HOÀN CHỈNH (ĐƯỢC PHÉP TRUYỀN GIỜ)
+ * ========================================== */
 export const createFullChamCong = async (req, res) => {
-    let { ma_nhan_vien, ngay_lam, gio_vao, gio_ra } = req.body;
+    const { ma_nhan_vien, ngay_lam, gio_vao, gio_ra } = req.body;
 
-    if (!ngay_lam) {
-        ngay_lam = moment().format('YYYY-MM-DD');
+    if (!ma_nhan_vien || !gio_vao || !gio_ra) {
+        return res.status(400).send({ message: "Thiếu thông tin bắt buộc." });
     }
-    
-    // Kiểm tra giờ ra phải lớn hơn giờ vào
+
+    const ngayLamFinal = ngay_lam || moment().format('YYYY-MM-DD');
+
     if (moment(gio_vao, 'HH:mm:ss').isSameOrAfter(moment(gio_ra, 'HH:mm:ss'))) {
         return res.status(400).send({ message: "Giờ ra phải sau giờ vào." });
     }
 
     try {
-        // Gọi Service tạo bản ghi, Service sẽ tự động tính trạng thái
         const newRecord = await chamCongService.createChamCongRecord(
-            ma_nhan_vien, ngay_lam, gio_vao, gio_ra
+            ma_nhan_vien,
+            ngayLamFinal,
+            gio_vao,
+            gio_ra
         );
 
-        res.status(201).send({ 
-            message: `Ghi nhận chấm công (hoàn chỉnh) thành công! Trạng thái: ${newRecord.trang_thai_ca}`, 
-            data: newRecord 
+        res.status(201).send({
+            message: `HR ghi nhận ca làm thành công! Trạng thái: ${newRecord.trang_thai_ca}`,
+            data: newRecord
         });
 
     } catch (error) {
-        if (error.message.includes("Giờ làm đã ghi nhận bị chồng lấn")) {
-             return res.status(400).send({ message: error.message });
-        }
-        res.status(500).send({ message: "Lỗi khi ghi nhận ca làm: " + error.message });
+        res.status(500).send({ message: "Lỗi khi tạo ca làm: " + error.message });
     }
 };
 
-//Lấy lịch sử chấm công của 1 nv theo tháng/năm.
 
+/* ==========================
+ *  HISTORY theo tháng/năm
+ * ========================== */
 export const getHistory = async (req, res) => {
     const { ma_nv } = req.params;
-    const { thang, nam } = req.query; 
-    const userRole = req.userRole; 
-    const currentUserId = req.userId;
-    
+    const { thang, nam } = req.query;
+
     if (!thang || !nam) {
         return res.status(400).send({ message: "Thiếu tham số tháng và năm." });
     }
+
     try {
         const result = await chamCongService.getChamCongByMaNv(
-            ma_nv, parseInt(thang), parseInt(nam), userRole, currentUserId 
+            ma_nv,
+            parseInt(thang),
+            parseInt(nam),
+            req.userRole,
+            req.userId
         );
-        
-        // Xử lý phân quyền (logic đã có trong service)
+
         if (result.error === 403) {
-             return res.status(403).send({ message: result.message });
+            return res.status(403).send({ message: result.message });
         }
 
-        if (result.records.length === 0) {
-            return res.status(404).send({ message: `Không tìm thấy lịch sử chấm công tháng ${thang}/${nam}.` });
-        }
-        
-        res.send({ 
-            message: "Lấy lịch sử chấm công thành công.", 
-            data: result.records 
+        res.send({
+            message: "Lấy lịch sử chấm công thành công.",
+            data: result.records
         });
+
     } catch (error) {
         res.status(500).send({ message: "Lỗi khi lấy lịch sử chấm công: " + error.message });
     }
 };
-// ds chuyên cần all nv 
+
+
+/* ==========================
+ *  Summary báo cáo chuyên cần
+ * ========================== */
 export const getAll = async (req, res) => {
     const { thang, nam } = req.query;
 
@@ -139,19 +151,17 @@ export const getAll = async (req, res) => {
     }
 
     try {
-        // Gọi Service để lấy dữ liệu tổng hợp (chỉ trả về 4 trạng thái thống kê)
-        const summaryCounts = await chamCongService.getAllChamCongSummary(
-            parseInt(thang), 
+        const summary = await chamCongService.getAllChamCongSummary(
+            parseInt(thang),
             parseInt(nam)
         );
 
-        res.send({ 
-            message: `Lấy báo cáo tổng hợp nhân viên theo 4 trạng thái chuyên cần tháng ${thang}/${nam} thành công.`, 
-            // data giờ chỉ chứa đối tượng tổng hợp (vd: { "DungGio": 55, "DiMuon": 12, ...})
-            data: summaryCounts
+        res.send({
+            message: `Lấy báo cáo chuyên cần tháng ${thang}/${nam} thành công.`,
+            data: summary
         });
+
     } catch (error) {
-        console.error("Lỗi Controller getAll:", error);
-        res.status(500).send({ message: "Lỗi khi lấy báo cáo chuyên cần: " + error.message });
+        res.status(500).send({ message: "Lỗi khi lấy báo cáo: " + error.message });
     }
 };

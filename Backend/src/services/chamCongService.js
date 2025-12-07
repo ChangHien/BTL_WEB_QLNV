@@ -60,58 +60,82 @@ export const checkOverlappingTime = async (ma_nhan_vien, ngay_lam, gio_vao, gio_
 
 // Ghi nhận ca làm mới (Check-in/Check-out)
 
-export const createChamCongRecord = async (ma_nhan_vien, ngay_lam, gio_vao, gio_ra) => {
-    // Nếu có gio_ra, kiểm tra chồng lấn
-    if (gio_ra) {
-        const isOverlapping = await checkOverlappingTime(ma_nhan_vien, ngay_lam, gio_vao, gio_ra);
-        if (isOverlapping) {
-            throw new Error("Giờ làm đã ghi nhận bị chồng lấn.");
-        }
-    }
-    
-    // CẬP NHẬT: LƯU TRẠNG THÁI CHUYÊN CẦN BAN ĐẦU ⭐
-    const initialStatus = gio_ra 
-        ? tinhTrangThaiChuyenCan(gio_vao, gio_ra) 
-        : TRANG_THAI_CHUYEN_CAN.DANG_LAM;
+export const createChamCongRecord = async (ma_nhan_vien, ngay_lam = null, gio_vao = null, gio_ra = null) => {
 
-    // Ghi nhận vào DB
+    // Nếu HR truyền đầy đủ giờ
+    const isFullMode = gio_vao !== null && gio_ra !== null;
+
+    // Nếu không truyền ngày, tự lấy ngày server
+    if (!ngay_lam) {
+        ngay_lam = moment().format('YYYY-MM-DD');
+    }
+
+    // ⬅ CASE 1: Check-in (không truyền giờ)
+    if (!isFullMode) {
+
+        // Giờ vào = giờ thực server
+        gio_vao = moment().format('HH:mm:ss');
+
+        // Check đã check-in hôm nay chưa
+        const existing = await ChamCong.findOne({
+            where: { ma_nhan_vien, ngay_lam, gio_ra: null }
+        });
+
+        if (existing) {
+            throw new Error("Bạn đã check-in rồi và chưa check-out.");
+        }
+
+        return await ChamCong.create({
+            ma_nhan_vien,
+            ngay_lam,
+            gio_vao,
+            gio_ra: null,
+            trang_thai_ca: TRANG_THAI_CHUYEN_CAN.DANG_LAM
+        });
+    }
+
+    // ⬅ CASE 2: HR tạo full ca
+    const isOverlap = await checkOverlappingTime(ma_nhan_vien, ngay_lam, gio_vao, gio_ra);
+    if (isOverlap) {
+        throw new Error("Giờ làm đã ghi nhận bị chồng lấn với ca khác.");
+    }
+
+    const trang_thai = tinhTrangThaiChuyenCan(gio_vao, gio_ra);
+
     return await ChamCong.create({
         ma_nhan_vien,
         ngay_lam,
         gio_vao,
         gio_ra,
-        trang_thai_ca: initialStatus // Lưu trạng thái 
+        trang_thai_ca: trang_thai
     });
 };
 
-export const updateGioRaAndCheckChuyenCan = async (ma_nhan_vien, ngay_lam, gio_ra) => {
-    // 1. Tìm bản ghi Check-in chưa có gio_ra trong ngày hôm đó
+/**
+ * 🎯 Check-out – dùng giờ thực tế của server
+ */
+export const updateGioRaAndCheckChuyenCan = async (ma_nhan_vien) => {
+    const ngay_lam = moment().format('YYYY-MM-DD');
+    const gio_ra = moment().format('HH:mm:ss'); // ⬅ LẤY GIỜ THỰC
+
+    // Tìm bản ghi check-in chưa đóng
     const record = await ChamCong.findOne({
-        where: {
-            ma_nhan_vien,
-            ngay_lam,
-            gio_ra: null // Tìm bản ghi chưa check-out
-        }
+        where: { ma_nhan_vien, ngay_lam, gio_ra: null }
     });
 
     if (!record) {
-        throw new Error("Không tìm thấy bản ghi Check-in chưa kết thúc trong ngày.");
+        throw new Error("Không tìm thấy bản ghi Check-in để Check-out.");
     }
 
     const gio_vao = record.gio_vao;
 
-    // 2. Kiểm tra tính hợp lệ của giờ ra so với giờ vào
-    const checkInTime = moment(gio_vao, 'HH:mm:ss');
-    const checkOutTime = moment(gio_ra, 'HH:mm:ss');
-
-    if (checkOutTime.isBefore(checkInTime)) {
-        throw new Error("Giờ ra phải sau giờ vào.");
+    // check out phải sau check in
+    if (moment(gio_ra, 'HH:mm:ss').isBefore(moment(gio_vao, 'HH:mm:ss'))) {
+        throw new Error("Giờ ra không hợp lệ.");
     }
 
-    // 3. Tính toán trạng thái chuyên cần
     const trang_thai_moi = tinhTrangThaiChuyenCan(gio_vao, gio_ra);
 
-    // 4. Cập nhật bản ghi
     await record.update({
         gio_ra,
         trang_thai_ca: trang_thai_moi

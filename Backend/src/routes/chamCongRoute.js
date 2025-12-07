@@ -22,20 +22,20 @@ router.put(
 
 router.post(
     '/full', 
-    roleMiddleware([ROLES.ADMIN, ROLES.HR]), // Chỉ Admin/HR mới có quyền nhập ca hoàn chỉnh
+    roleMiddleware([ROLES.ADMIN, ROLES.HR]), 
     chamCongController.createFullChamCong
+);
+
+router.get(
+    '/summary', 
+    roleMiddleware([ROLES.ADMIN, ROLES.HR]), 
+    chamCongController.getAll
 );
 
 router.get(
   '/:ma_nv', 
   roleMiddleware([ROLES.ADMIN, ROLES.HR, ROLES.NHAN_VIEN]),
   chamCongController.getHistory
-);
+)
 
 export default router;
-
-router.get(
-    '/summary', 
-    roleMiddleware([ROLES.ADMIN, ROLES.HR]), // Chỉ Admin/HR có quyền xem báo cáo tổng hợp
-    chamCongController.getAll
-);

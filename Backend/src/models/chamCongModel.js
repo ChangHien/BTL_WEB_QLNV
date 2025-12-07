@@ -29,10 +29,17 @@ const ChamCongModel = (sequelize, DataTypes) => {
             type: DataTypes.STRING(20),
             allowNull: true,
             defaultValue: 'DangLam'
+        },
+        trang_thai_chuyen_can: {
+            type: DataTypes.STRING (20),
+            allowNull: true
         }
+
     }, {
         tableName: 'ChamCong',
-        timestamps: false,
+        timestamps: true,
+        createdAt: 'created_at',       
+        updatedAt: 'updated_at',
         
     });
 
