@@ -1,53 +1,38 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Card,
-  Select,
-  DatePicker,
-  TimePicker,
-  Button,
-  message,
-  Row,
-  Col,
-} from "antd";
 import chamCongApi from "../../api/chamCongApi";
 import nhanVienApi from "../../api/nhanVienApi";
 import dayjs from "dayjs";
-import "./ChamCongPage.scss";
-
-const { Option } = Select;
 
 const ChamCongPage = () => {
-  // ---------------- STATE ----------------
   const [listChamCong, setListChamCong] = useState([]);
   const [nhanVienList, setNhanVienList] = useState([]);
-  const [form, setForm] = useState({
-    ma_nhan_vien: undefined,
-    ngay_lam: dayjs(),
-    gio_vao: null,
-    gio_ra: null,
-  });
   const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    ma_nhan_vien: "",
+    ngay_lam: dayjs().format("YYYY-MM-DD"),
+    gio_vao: "",
+    gio_ra: "",
+  });
+
   const [selectedMonth, setSelectedMonth] = useState(dayjs().month() + 1);
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
 
-  // ---------------- ROLE / USER ----------------
-  const userRole = localStorage.getItem("role"); // ADMIN / HR / NHAN_VIEN
-  const currentUserId = localStorage.getItem("userId"); 
+  const role = localStorage.getItem("role");
+  const userId = localStorage.getItem("userId");
 
   // ---------------- LOAD NHÂN VIÊN ----------------
   const loadNhanVien = async () => {
-    if (userRole === "NHAN_VIEN") {
-      // Nhân viên chỉ thấy mình
-      setNhanVienList([{ ma_nhan_vien: currentUserId, ten_nhan_vien: "Bạn" }]);
-      setForm({ ...form, ma_nhan_vien: currentUserId });
+    if (role === "NHAN_VIEN") {
+      setNhanVienList([{ ma_nhan_vien: userId, ten_nhan_vien: "Bạn" }]);
+      setForm((f) => ({ ...f, ma_nhan_vien: userId }));
       return;
     }
     try {
-      const nvRes = await nhanVienApi.getAll();
-      setNhanVienList(nvRes);
-    } catch (err) {
-      message.error("Lỗi tải danh sách nhân viên");
+      const data = await nhanVienApi.getAll();
+      setNhanVienList(data);
+    } catch {
+      alert("Lỗi tải danh sách nhân viên");
     }
   };
 
@@ -57,190 +42,218 @@ const ChamCongPage = () => {
 
   // ---------------- LOAD LỊCH SỬ ----------------
   const loadHistory = async (ma_nv) => {
-    if (!ma_nv) {
-      setListChamCong([]);
-      return;
-    }
+    if (!ma_nv) return;
+
     setLoading(true);
     try {
-      const res = await chamCongApi.getByNhanVien(ma_nv, selectedMonth, selectedYear);
-      const withNames = res.map((r) => {
-        const nv = nhanVienList.find((n) => n.ma_nhan_vien === r.ma_nhan_vien);
-        return {
-          ...r,
-          ten_nhan_vien: nv?.ten_nhan_vien ?? r.ma_nhan_vien,
-        };
+      const res = await chamCongApi.getByNhanVien(
+        ma_nv,
+        selectedMonth,
+        selectedYear
+      );
+
+      const rows = res.map((item) => {
+        const nv = nhanVienList.find(
+          (n) => n.ma_nhan_vien === item.ma_nhan_vien
+        );
+        return { ...item, ten_nhan_vien: nv?.ten_nhan_vien ?? "N/A" };
       });
-      setListChamCong(withNames);
-    } catch (err) {
-      message.error(err.response?.data?.message || "Lỗi tải lịch sử chấm công");
+
+      setListChamCong(rows);
+    } catch {
       setListChamCong([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Khi danh sách nhân viên load xong → load lịch sử
   useEffect(() => {
-    if (form.ma_nhan_vien) loadHistory(form.ma_nhan_vien);
-  }, [selectedMonth, selectedYear, nhanVienList]);
+    if (!form.ma_nhan_vien) return;
+    loadHistory(form.ma_nhan_vien);
+  }, [nhanVienList, selectedMonth, selectedYear]);
 
-  // ---------------- FORM ----------------
-  const handleChange = (name, value) => {
-    setForm({ ...form, [name]: value });
-  };
+  // ---------------- ACTIONS ----------------
 
-  // Full chấm công (HR/Admin)
-  const handleSubmit = async () => {
-    if (!form.ma_nhan_vien || !form.ngay_lam || !form.gio_vao || !form.gio_ra) {
-      return message.warning("Vui lòng điền đầy đủ thông tin");
-    }
-    try {
-      await chamCongApi.createFull({
-        ma_nhan_vien: form.ma_nhan_vien,
-        ngay_lam: form.ngay_lam.format("YYYY-MM-DD"),
-        gio_vao: form.gio_vao.format("HH:mm:ss"),
-        gio_ra: form.gio_ra.format("HH:mm:ss"),
-      });
-      message.success("Chấm công thành công (Full).");
-      loadHistory(form.ma_nhan_vien);
-    } catch (err) {
-      message.error(err.response?.data?.message || "Lỗi khi chấm công");
-    }
-  };
-
-  // Quick check-in
   const handleCheckIn = async () => {
-    if (!form.ma_nhan_vien) return message.warning("Chọn nhân viên để check-in");
+    if (!form.ma_nhan_vien) return alert("Chọn nhân viên!");
+
     try {
       await chamCongApi.checkIn({
         ma_nhan_vien: form.ma_nhan_vien,
-        ngay_lam: form.ngay_lam.format("YYYY-MM-DD"),
-        gio_vao: form.gio_vao ? form.gio_vao.format("HH:mm:ss") : dayjs().format("HH:mm:ss"),
+        ngay_lam: form.ngay_lam,
+        gio_vao: form.gio_vao || dayjs().format("HH:mm:ss"),
       });
-      message.success("Check-in thành công");
+      alert("Check-in thành công");
       loadHistory(form.ma_nhan_vien);
-    } catch (err) {
-      message.error(err.response?.data?.message || "Lỗi check-in");
+    } catch {
+      alert("Lỗi check-in");
     }
   };
 
-  // Quick check-out
   const handleCheckOut = async () => {
-    if (!form.ma_nhan_vien) return message.warning("Chọn nhân viên để check-out");
+    if (!form.ma_nhan_vien) return alert("Chọn nhân viên!");
+
     try {
       await chamCongApi.checkOut({
         ma_nhan_vien: form.ma_nhan_vien,
-        ngay_lam: form.ngay_lam.format("YYYY-MM-DD"),
-        gio_ra: form.gio_ra ? form.gio_ra.format("HH:mm:ss") : dayjs().format("HH:mm:ss"),
+        ngay_lam: form.ngay_lam,
+        gio_ra: form.gio_ra || dayjs().format("HH:mm:ss"),
       });
-      message.success("Check-out thành công");
+      alert("Check-out thành công");
       loadHistory(form.ma_nhan_vien);
-    } catch (err) {
-      message.error(err.response?.data?.message || "Lỗi check-out");
+    } catch {
+      alert("Lỗi check-out");
     }
   };
 
-  // ---------------- TABLE ----------------
-  const columns = [
-    { title: "Nhân viên", dataIndex: "ten_nhan_vien", key: "ten_nhan_vien" },
-    { title: "Ngày làm", dataIndex: "ngay_lam", key: "ngay_lam" },
-    { title: "Giờ vào", dataIndex: "gio_vao", key: "gio_vao" },
-    { title: "Giờ ra", dataIndex: "gio_ra", key: "gio_ra" },
-    { title: "Trạng thái", dataIndex: "trang_thai_ca", key: "trang_thai_ca" },
-  ];
+  const handleFull = async () => {
+    if (!form.ma_nhan_vien || !form.gio_vao || !form.gio_ra)
+      return alert("Điền đầy đủ!");
+
+    try {
+      await chamCongApi.createFull(form);
+      alert("Ghi Full thành công!");
+      loadHistory(form.ma_nhan_vien);
+    } catch {
+      alert("Lỗi ghi full");
+    }
+  };
 
   // ---------------- RENDER ----------------
   return (
-    <div className="ChamCongPage">
-      <h2>📝 Quản lý Chấm Công</h2>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-6">📝 Quản lý Chấm Công</h2>
 
-      <Card title="Chấm công mới / thao tác nhanh" style={{ marginBottom: 24 }}>
-        <Row gutter={16}>
-          {/* Chỉ HR/Admin mới chọn nhân viên khác */}
-          {(userRole === "HR" || userRole === "ADMIN") && (
-            <Col span={6}>
-              <Select
-                placeholder="Chọn nhân viên"
-                style={{ width: "100%" }}
-                value={form.ma_nhan_vien}
-                onChange={(val) => {
-                  handleChange("ma_nhan_vien", val);
-                  setTimeout(() => loadHistory(val), 0);
-                }}
-              >
-                {nhanVienList.map((nv) => (
-                  <Option key={nv.ma_nhan_vien} value={nv.ma_nhan_vien}>
-                    {nv.ten_nhan_vien}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-          )}
+      {/* FORM */}
+      <div className="bg-white p-6 rounded-2xl shadow mb-6">
+        <h3 className="text-lg font-semibold mb-4">Chấm công mới</h3>
 
-          <Col span={4}>
-            <DatePicker
-              picker="month"
-              value={dayjs(`${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`)}
-              onChange={(val) => {
-                if (!val) return;
-                setSelectedMonth(val.month() + 1);
-                setSelectedYear(val.year());
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {(role === "HR" || role === "ADMIN") && (
+            <select
+              className="p-2 border rounded-lg"
+              value={form.ma_nhan_vien}
+              onChange={(e) => {
+                setForm({ ...form, ma_nhan_vien: e.target.value });
+                loadHistory(e.target.value);
               }}
-              style={{ width: "100%" }}
-            />
-          </Col>
-
-          <Col span={4}>
-            <DatePicker
-              placeholder="Ngày làm"
-              style={{ width: "100%" }}
-              value={form.ngay_lam}
-              onChange={(val) => handleChange("ngay_lam", val)}
-            />
-          </Col>
-
-          <Col span={4}>
-            <TimePicker
-              placeholder="Giờ vào"
-              style={{ width: "100%" }}
-              value={form.gio_vao}
-              onChange={(val) => handleChange("gio_vao", val)}
-            />
-          </Col>
-
-          <Col span={4}>
-            <TimePicker
-              placeholder="Giờ ra"
-              style={{ width: "100%" }}
-              value={form.gio_ra}
-              onChange={(val) => handleChange("gio_ra", val)}
-            />
-          </Col>
-        </Row>
-
-        <Row style={{ marginTop: 16 }} gutter={12}>
-          {/* HR/Admin mới được ghi Full */}
-          {(userRole === "HR" || userRole === "ADMIN") && (
-            <Col>
-              <Button type="primary" onClick={handleSubmit}>
-                Ghi nhận (Full)
-              </Button>
-            </Col>
+            >
+              <option value="">Chọn nhân viên</option>
+              {nhanVienList.map((nv) => (
+                <option key={nv.ma_nhan_vien} value={nv.ma_nhan_vien}>
+                  {nv.ten_nhan_vien}
+                </option>
+              ))}
+            </select>
           )}
 
-          {/* Check-in / Check-out mọi người đều được */}
-          <Col>
-            <Button onClick={handleCheckIn}>Check-in</Button>
-          </Col>
-          <Col>
-            <Button onClick={handleCheckOut}>Check-out</Button>
-          </Col>
-        </Row>
-      </Card>
+          <input
+            type="month"
+            className="p-2 border rounded-lg"
+            value={`${selectedYear}-${String(selectedMonth).padStart(2, "0")}`}
+            onChange={(e) => {
+              const [y, m] = e.target.value.split("-");
+              setSelectedYear(+y);
+              setSelectedMonth(+m);
+            }}
+          />
 
-      <Card title={`Danh sách chấm công - ${selectedMonth}/${selectedYear}`}>
-        <Table columns={columns} dataSource={listChamCong} rowKey="id" loading={loading} />
-      </Card>
+          <input
+            type="date"
+            className="p-2 border rounded-lg"
+            value={form.ngay_lam}
+            onChange={(e) =>
+              setForm({ ...form, ngay_lam: e.target.value })
+            }
+          />
+
+          <input
+            type="time"
+            placeholder="Giờ vào"
+            className="p-2 border rounded-lg"
+            value={form.gio_vao}
+            onChange={(e) => setForm({ ...form, gio_vao: e.target.value })}
+          />
+
+          <input
+            type="time"
+            placeholder="Giờ ra"
+            className="p-2 border rounded-lg"
+            value={form.gio_ra}
+            onChange={(e) => setForm({ ...form, gio_ra: e.target.value })}
+          />
+        </div>
+
+        <div className="flex gap-3 mt-4">
+          {(role === "HR" || role === "ADMIN") && (
+            <button
+              onClick={handleFull}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Ghi Full
+            </button>
+          )}
+
+          <button
+            onClick={handleCheckIn}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Check-in
+          </button>
+
+          <button
+            onClick={handleCheckOut}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Check-out
+          </button>
+        </div>
+      </div>
+
+      {/* BẢNG DỮ LIỆU */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h3 className="text-lg font-semibold mb-4">
+          Danh sách chấm công — {selectedMonth}/{selectedYear}
+        </h3>
+
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-3 border">Nhân viên</th>
+              <th className="p-3 border">Ngày</th>
+              <th className="p-3 border">Giờ vào</th>
+              <th className="p-3 border">Giờ ra</th>
+              <th className="p-3 border">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="p-4 text-center">
+                  Đang tải...
+                </td>
+              </tr>
+            ) : listChamCong.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="p-4 text-center text-gray-500">
+                  Không có dữ liệu
+                </td>
+              </tr>
+            ) : (
+              listChamCong.map((item) => (
+                <tr key={item.id} className="border-b hover:bg-gray-50">
+                  <td className="p-3">{item.ten_nhan_vien}</td>
+                  <td className="p-3">{item.ngay_lam}</td>
+                  <td className="p-3">{item.gio_vao}</td>
+                  <td className="p-3">{item.gio_ra}</td>
+                  <td className="p-3">{item.trang_thai_ca}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

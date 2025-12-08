@@ -1,7 +1,4 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select } from 'antd';
-
-const { Option } = Select;
+import React, { useEffect, useState } from "react";
 
 const NhanVienFormModal = ({
   visible,
@@ -11,77 +8,128 @@ const NhanVienFormModal = ({
   listPhongBan,
   listChucVu
 }) => {
-  const [form] = Form.useForm();
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    form.resetFields();
-    if (editingNhanVien) form.setFieldsValue(editingNhanVien);
+    setFormData(editingNhanVien || {});
   }, [editingNhanVien]);
 
+  if (!visible) return null;
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    onOk(formData);
+  };
+
   return (
-    <Modal
-      title={editingNhanVien ? "Chỉnh sửa nhân viên" : "Thêm nhân viên"}
-      open={visible}
-      onOk={async () => {
-        const values = await form.validateFields();
-        onOk(values);
-      }}
-      onCancel={onCancel}
-      okText="Lưu"
-    >
-      <Form form={form} layout="vertical">
-        <Form.Item
-          name="ma_nhan_vien"
-          label="Mã NV"
-          rules={[{ required: true, message: 'Nhập mã nhân viên!' }]}
-        >
-          <Input disabled={!!editingNhanVien} />
-        </Form.Item>
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white w-full max-w-xl rounded-xl shadow-lg p-6 animate-enter">
+        <h2 className="text-xl font-semibold mb-4">
+          {editingNhanVien ? "Chỉnh sửa nhân viên" : "Thêm nhân viên"}
+        </h2>
 
-        <Form.Item
-          name="ten_nhan_vien"
-          label="Tên NV"
-          rules={[{ required: true, message: 'Nhập tên nhân viên!' }]}
-        >
-          <Input />
-        </Form.Item>
+        <div className="grid grid-cols-2 gap-4">
+          {/* Mã NV */}
+          <div className="col-span-2">
+            <label className="font-medium mb-1 block">Mã NV</label>
+            <input
+              className="w-full border rounded-lg p-2"
+              value={formData.ma_nhan_vien || ""}
+              onChange={(e) => handleChange("ma_nhan_vien", e.target.value)}
+              disabled={!!editingNhanVien}
+            />
+          </div>
 
-        <Form.Item name="ma_phong" label="Phòng Ban">
-          <Select allowClear>
-            {listPhongBan.map(pb => (
-              <Option key={pb.ma_phong} value={pb.ma_phong}>{pb.ten_phong}</Option>
-            ))}
-          </Select>
-        </Form.Item>
+          {/* Tên NV */}
+          <div className="col-span-2">
+            <label className="font-medium mb-1 block">Tên NV</label>
+            <input
+              className="w-full border rounded-lg p-2"
+              value={formData.ten_nhan_vien || ""}
+              onChange={(e) => handleChange("ten_nhan_vien", e.target.value)}
+            />
+          </div>
 
-        <Form.Item name="ma_chuc_vu" label="Chức Vụ">
-          <Select allowClear>
-            {listChucVu.map(cv => (
-              <Option key={cv.ma_chuc_vu} value={cv.ma_chuc_vu}>{cv.ten_chuc_vu}</Option>
-            ))}
-          </Select>
-        </Form.Item>
+          {/* Phòng Ban */}
+          <div>
+            <label className="font-medium mb-1 block">Phòng Ban</label>
+            <select
+              className="w-full border rounded-lg p-2"
+              value={formData.ma_phong || ""}
+              onChange={(e) => handleChange("ma_phong", e.target.value)}
+            >
+              <option value="">-- Chọn --</option>
+              {listPhongBan.map(pb => (
+                <option key={pb.ma_phong} value={pb.ma_phong}>{pb.ten_phong}</option>
+              ))}
+            </select>
+          </div>
 
-        <Form.Item
-          name="muc_luong_co_ban"
-          label="Mức lương"
-          rules={[{ required: true, message: 'Nhập mức lương!' }]}
-        >
-          <Input type="number" />
-        </Form.Item>
+          {/* Chức Vụ */}
+          <div>
+            <label className="font-medium mb-1 block">Chức Vụ</label>
+            <select
+              className="w-full border rounded-lg p-2"
+              value={formData.ma_chuc_vu || ""}
+              onChange={(e) => handleChange("ma_chuc_vu", e.target.value)}
+            >
+              <option value="">-- Chọn --</option>
+              {listChucVu.map(cv => (
+                <option key={cv.ma_chuc_vu} value={cv.ma_chuc_vu}>{cv.ten_chuc_vu}</option>
+              ))}
+            </select>
+          </div>
 
-        <Form.Item name="ngay_vao_lam" label="Ngày vào làm">
-          <Input type="date" />
-        </Form.Item>
+          {/* Lương */}
+          <div className="col-span-2">
+            <label className="font-medium mb-1 block">Mức lương</label>
+            <input
+              type="number"
+              className="w-full border rounded-lg p-2"
+              value={formData.muc_luong_co_ban || ""}
+              onChange={(e) => handleChange("muc_luong_co_ban", e.target.value)}
+            />
+          </div>
 
-        <Form.Item name="trang_thai" label="Trạng Thái">
-          <Select>
-            <Option value="DangLam">Đang làm</Option>
-            <Option value="DaNghi">Đã nghỉ</Option>
-          </Select>
-        </Form.Item>
-      </Form>
-    </Modal>
+          {/* Ngày vào làm */}
+          <div className="col-span-2">
+            <label className="font-medium mb-1 block">Ngày vào làm</label>
+            <input
+              type="date"
+              className="w-full border rounded-lg p-2"
+              value={formData.ngay_vao_lam || ""}
+              onChange={(e) => handleChange("ngay_vao_lam", e.target.value)}
+            />
+          </div>
+
+          {/* Trạng thái */}
+          <div className="col-span-2">
+            <label className="font-medium mb-1 block">Trạng Thái</label>
+            <select
+              className="w-full border rounded-lg p-2"
+              value={formData.trang_thai || ""}
+              onChange={(e) => handleChange("trang_thai", e.target.value)}
+            >
+              <option value="DangLam">Đang làm</option>
+              <option value="DaNghi">Đã nghỉ</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="text-right mt-6 space-x-3">
+          <button className="px-4 py-2 bg-gray-300 rounded-lg" onClick={onCancel}>
+            Hủy
+          </button>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg" onClick={handleSubmit}>
+            Lưu
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

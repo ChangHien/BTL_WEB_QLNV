@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Spin, message, Modal } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import nhanVienApi from '../../api/nhanVienApi';
 import phongBanApi from '../../api/phongBanApi';
 import chucVuApi from '../../api/chucVuApi';
@@ -15,11 +13,9 @@ const NhanVienPage = () => {
   const [listChucVu, setListChucVu] = useState([]);
   const [selectedPhong, setSelectedPhong] = useState(undefined);
   const [selectedChucVu, setSelectedChucVu] = useState(undefined);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [editingNhanVien, setEditingNhanVien] = useState(null);
 
-  // Load data
   useEffect(() => {
     loadData();
   }, []);
@@ -32,22 +28,17 @@ const NhanVienPage = () => {
         phongBanApi.getAll(),
         chucVuApi.getAll()
       ]);
-      setListNhanVien(Array.isArray(nvRes) ? nvRes : []);
-      setFilteredNhanVien(Array.isArray(nvRes) ? nvRes : []);
-      const pbData = pbRes?.data || pbRes || [];
-      const cvData = cvRes?.data || cvRes || [];
-      setListPhongBan(Array.isArray(pbData) ? pbData : []);
-      setListChucVu(Array.isArray(cvData) ? cvData : []);
-    } catch (error) {
-      message.error("Lỗi tải dữ liệu");
-      setListPhongBan([]);
-      setListChucVu([]);
+
+      setListNhanVien(nvRes || []);
+      setFilteredNhanVien(nvRes || []);
+
+      setListPhongBan(pbRes?.data || pbRes || []);
+      setListChucVu(cvRes?.data || cvRes || []);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter
   useEffect(() => {
     let result = listNhanVien;
     if (selectedPhong) result = result.filter(nv => nv.ma_phong === selectedPhong);
@@ -55,72 +46,34 @@ const NhanVienPage = () => {
     setFilteredNhanVien(result);
   }, [selectedPhong, selectedChucVu, listNhanVien]);
 
-  // Table columns
-  const columns = [
-    { title: 'Mã NV', dataIndex: 'ma_nhan_vien', key: 'ma_nhan_vien' },
-    { title: 'Tên NV', dataIndex: 'ten_nhan_vien', key: 'ten_nhan_vien' },
-    { title: 'Phòng Ban', dataIndex: 'ma_phong', key: 'ma_phong' },
-    { title: 'Chức Vụ', dataIndex: 'ma_chuc_vu', key: 'ma_chuc_vu' },
-    { title: 'Mức Lương', dataIndex: 'muc_luong_co_ban', key: 'muc_luong_co_ban', render: (val) => Number(val).toLocaleString('vi-VN') + ' VNĐ' },
-    { title: 'Ngày Vào Làm', dataIndex: 'ngay_vao_lam', key: 'ngay_vao_lam' },
-    { title: 'Trạng Thái', dataIndex: 'trang_thai', key: 'trang_thai' },
-    {
-      title: 'Hành Động',
-      key: 'action',
-      render: (_, record) => (
-        <>
-          <Button icon={<EditOutlined />} style={{ marginRight: 8 }} onClick={() => openEditModal(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.ma_nhan_vien)} />
-        </>
-      )
-    }
-  ];
-
-  // Modal handlers
   const openEditModal = (nv) => {
-    setEditingNhanVien(nv || null);
+    setEditingNhanVien(nv);
     setModalVisible(true);
   };
 
-  const handleModalOk = async (values) => {
-    try {
-      if (editingNhanVien) {
-        await nhanVienApi.update(editingNhanVien.ma_nhan_vien, values);
-        message.success("Cập nhật nhân viên thành công");
-      } else {
-        await nhanVienApi.create(values);
-        message.success("Thêm nhân viên thành công");
-      }
-      setModalVisible(false);
-      loadData();
-    } catch (error) {
-      message.error(error.response?.data?.message || "Lỗi khi lưu nhân viên");
+  const handleDelete = async (maNV) => {
+    if (!window.confirm(`Bạn có chắc muốn xóa nhân viên ${maNV}?`)) return;
+
+    await nhanVienApi.delete(maNV);
+    loadData();
+  };
+
+  const handleModalOk = async (data) => {
+    if (editingNhanVien) {
+      await nhanVienApi.update(editingNhanVien.ma_nhan_vien, data);
+    } else {
+      await nhanVienApi.create(data);
     }
-  };
 
-  const handleDelete = (maNV) => {
-    Modal.confirm({
-      title: "Xác nhận xóa",
-      content: `Bạn có chắc muốn xóa nhân viên ${maNV}?`,
-      onOk: async () => {
-        try {
-          await nhanVienApi.delete(maNV);
-          message.success("Xóa thành công");
-          loadData();
-        } catch (error) {
-          message.error("Xóa thất bại");
-        }
-      }
-    });
+    setModalVisible(false);
+    loadData();
   };
-
-  if (loading) return <div style={{ textAlign: 'center', padding: 50 }}><Spin size="large" /></div>;
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-      <h2 style={{ marginBottom: 24 }}>👤 Quản Lý Nhân Viên</h2>
+    <div className="max-w-6xl mx-auto p-4">
+      <h2 className="text-2xl font-semibold mb-6">👤 Quản Lý Nhân Viên</h2>
 
-      <Card style={{ marginBottom: 24 }}>
+      <div className="bg-white p-5 rounded-xl shadow mb-6">
         <NhanVienFilter
           listPhongBan={listPhongBan}
           listChucVu={listChucVu}
@@ -130,11 +83,64 @@ const NhanVienPage = () => {
           setSelectedChucVu={setSelectedChucVu}
           onAdd={() => openEditModal(null)}
         />
-      </Card>
+      </div>
 
-      <Card>
-        <Table columns={columns} dataSource={filteredNhanVien} rowKey="ma_nhan_vien" />
-      </Card>
+      {/* BẢNG */}
+      <div className="bg-white p-5 rounded-xl shadow overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-left">
+              <th className="p-3 border">Mã NV</th>
+              <th className="p-3 border">Tên NV</th>
+              <th className="p-3 border">Phòng Ban</th>
+              <th className="p-3 border">Chức Vụ</th>
+              <th className="p-3 border">Mức Lương</th>
+              <th className="p-3 border">Ngày Vào Làm</th>
+              <th className="p-3 border">Trạng Thái</th>
+              <th className="p-3 border text-center">Hành Động</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredNhanVien.map(nv => (
+              <tr key={nv.ma_nhan_vien} className="hover:bg-gray-50">
+                <td className="p-3 border">{nv.ma_nhan_vien}</td>
+                <td className="p-3 border">{nv.ten_nhan_vien}</td>
+                <td className="p-3 border">{nv.ma_phong}</td>
+                <td className="p-3 border">{nv.ma_chuc_vu}</td>
+                <td className="p-3 border">
+                  {Number(nv.muc_luong_co_ban).toLocaleString('vi-VN')} VNĐ
+                </td>
+                <td className="p-3 border">{nv.ngay_vao_lam}</td>
+                <td className="p-3 border">{nv.trang_thai}</td>
+                <td className="p-3 border text-center space-x-2">
+                  <button
+                    onClick={() => openEditModal(nv)}
+                    className="px-3 py-1 bg-yellow-500 text-white rounded"
+                  >
+                    Sửa
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(nv.ma_nhan_vien)}
+                    className="px-3 py-1 bg-red-600 text-white rounded"
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            ))}
+
+            {filteredNhanVien.length === 0 && (
+              <tr>
+                <td colSpan="8" className="text-center p-4 text-gray-500">
+                  Không có dữ liệu
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       <NhanVienFormModal
         visible={modalVisible}

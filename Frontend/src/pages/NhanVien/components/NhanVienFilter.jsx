@@ -1,8 +1,4 @@
 import React from 'react';
-import { Row, Col, Select, Button } from 'antd';
-import { PlusOutlined, FilterOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
 
 const NhanVienFilter = ({
   listPhongBan,
@@ -14,43 +10,44 @@ const NhanVienFilter = ({
   onAdd
 }) => {
   return (
-    <Row gutter={16}>
-      <Col span={6}>
-        <div style={{ fontWeight: 500, marginBottom: 5 }}>Phòng Ban</div>
-        <Select
-          placeholder="Tất cả"
-          style={{ width: '100%' }}
-          allowClear
-          value={selectedPhong}
-          onChange={setSelectedPhong}
+    <div className="grid grid-cols-12 gap-4 items-end">
+      <div className="col-span-12 md:col-span-4">
+        <label className="font-medium mb-1 block">Phòng Ban</label>
+        <select
+          value={selectedPhong || ""}
+          onChange={(e) => setSelectedPhong(e.target.value || undefined)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600"
         >
+          <option value="">Tất cả</option>
           {listPhongBan.map(pb => (
-            <Option key={pb.ma_phong} value={pb.ma_phong}>{pb.ten_phong}</Option>
+            <option key={pb.ma_phong} value={pb.ma_phong}>{pb.ten_phong}</option>
           ))}
-        </Select>
-      </Col>
+        </select>
+      </div>
 
-      <Col span={6}>
-        <div style={{ fontWeight: 500, marginBottom: 5 }}>Chức Vụ</div>
-        <Select
-          placeholder="Tất cả"
-          style={{ width: '100%' }}
-          allowClear
-          value={selectedChucVu}
-          onChange={setSelectedChucVu}
+      <div className="col-span-12 md:col-span-4">
+        <label className="font-medium mb-1 block">Chức Vụ</label>
+        <select
+          value={selectedChucVu || ""}
+          onChange={(e) => setSelectedChucVu(e.target.value || undefined)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600"
         >
+          <option value="">Tất cả</option>
           {listChucVu.map(cv => (
-            <Option key={cv.ma_chuc_vu} value={cv.ma_chuc_vu}>{cv.ten_chuc_vu}</Option>
+            <option key={cv.ma_chuc_vu} value={cv.ma_chuc_vu}>{cv.ten_chuc_vu}</option>
           ))}
-        </Select>
-      </Col>
+        </select>
+      </div>
 
-      <Col span={12} style={{ textAlign: 'right' }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
-          Thêm Nhân Viên
-        </Button>
-      </Col>
-    </Row>
+      <div className="col-span-12 md:col-span-4 text-right">
+        <button
+          onClick={onAdd}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-card hover:shadow-card-hover"
+        >
+          + Thêm Nhân Viên
+        </button>
+      </div>
+    </div>
   );
 };
 

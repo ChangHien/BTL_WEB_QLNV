@@ -1,31 +1,36 @@
+// src/api/chamCongApi.js
 import axiosClient from "./axiosClient";
 
 const chamCongApi = {
-  // Lấy tất cả (summary)
+  // Lấy tổng hợp (Summary)
   getThongKeBieuDo: async (thang, nam) => {
-    const res = await axiosClient.get(`/chamcong/summary`, { params: { thang, nam } });
-    return res?.data?.data ?? res?.data ?? [];
+    const res = await axiosClient.get(`/chamcong/summary`, {
+      params: { thang, nam },
+    });
+    return res?.data?.data ?? [];
   },
 
   // Lịch sử theo nhân viên
   getByNhanVien: async (maNhanVien, thang, nam) => {
-    const res = await axiosClient.get(`/chamcong/${maNhanVien}`, { params: { thang, nam } });
-    return res?.data?.data ?? res?.data ?? [];
+    const res = await axiosClient.get(`/chamcong/${maNhanVien}`, {
+      params: { thang, nam },
+    });
+    return res?.data?.data ?? [];
   },
 
-  // Check-in nhanh
+  // Check-in
   checkIn: async (payload) => {
     const res = await axiosClient.post(`/chamcong/check-in`, payload);
     return res?.data;
   },
 
-  // Check-out nhanh
+  // Check-out
   checkOut: async (payload) => {
     const res = await axiosClient.put(`/chamcong/check-out`, payload);
     return res?.data;
   },
 
-  // Full chấm công (HR/Admin)
+  // Full (HR/Admin)
   createFull: async (payload) => {
     const res = await axiosClient.post(`/chamcong/full`, payload);
     return res?.data;
