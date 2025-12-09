@@ -1,0 +1,70 @@
+/* Ô nhập liệu Username */
+input.netflix-input {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-radius: 4px !important;
+  height: 50px !important;
+}
+
+/* Ô nhập liệu Password  */
+.netflix-input.ant-input-password {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+  height: 50px !important;
+}
+
+/* Input con bên trong Password (Trong suốt) */
+.netflix-input.ant-input-password input.ant-input {
+  background-color: transparent !important;
+  border: none !important;
+  color: white !important;
+  height: 100% !important;
+}
+
+/* Placeholder & Focus */
+.netflix-input::placeholder,
+.netflix-input input::placeholder {
+  color: #bfbfbf !important;
+}
+
+input.netflix-input:focus,
+.netflix-input.ant-input-password:focus-within {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  border-bottom: 3px solid #fafafa !important;
+  box-shadow: none !important;
+}
+
+.ant-input-password-icon { color: #bfbfbf !important; }
+.ant-input-password-icon:hover { color: #fff !important; }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: white !important;
+    -webkit-box-shadow: 0 0 0px 1000px #232323 inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Button Login */
+.netflix-btn {
+  background: linear-gradient(90deg, #1890ff, #0050b3) !important;
+  border: none !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  height: 48px !important;
+  border-radius: 4px !important;
+  margin-top: 24px !important;
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.4);
+}
+.netflix-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.6);
+}
+
+/* Links */
+.netflix-checkbox .ant-checkbox-inner { background-color: transparent; border-color: #fff; }
+.netflix-link { color: #fff !important; font-size: 13px; opacity: 0.8; }
+.netflix-link:hover { text-decoration: underline; opacity: 1; }
