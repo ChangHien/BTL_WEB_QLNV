@@ -175,7 +175,7 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
             </div>
           </div>
 
-          {/* Nút Đăng Xuất (Chỉ hiện khi Expanded) */}
+          {/* Nút Đăng Xuất */}
           <button 
             onClick={handleLogout}
             className={`

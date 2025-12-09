@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Bell, Settings, LogOut, ChevronDown, User } from 'react-feather';
 
-// Chú ý: Component này sẽ cần được thêm vào Layout chính của bạn,
-// và nếu bạn muốn toggle Sidebar từ Header, bạn cần truyền prop setCollapsed.
 const AppHeader = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +20,7 @@ const AppHeader = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Hàm Đăng Xuất (Tích hợp logic xác nhận)
+  // Hàm Đăng Xuất 
   const handleLogout = async () => {
     if (window.confirm("Bạn có chắc chắn muốn đăng xuất?")) {
         try {
@@ -38,7 +36,6 @@ const AppHeader = () => {
     setIsDropdownOpen(prev => !prev);
   };
   
-  // Icon Avatar
   const Avatar = () => (
     <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 text-white flex items-center justify-center text-sm font-bold shadow-md cursor-pointer">
         {user?.username?.charAt(0).toUpperCase() || 'U'}
@@ -62,8 +59,6 @@ const AppHeader = () => {
             title="Thông báo"
         >
           <Bell size={20} />
-          {/* Badge thông báo mới (ví dụ) */}
-          {/* Thay đổi số lượng thông báo thực tế ở đây */}
           <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
         </button>
 
@@ -100,17 +95,7 @@ const AppHeader = () => {
                 </p>
               </div>
 
-              {/* Item Profile */}
-              <button 
-                onClick={() => {
-                    navigate('/tai-khoan'); // Giả sử '/tai-khoan' là trang thông tin cá nhân
-                    setIsDropdownOpen(false);
-                }}
-                className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                <User size={16} className="mr-2 text-blue-500" />
-                Thông tin cá nhân
-              </button>
+              
 
               {/* Item Logout */}
               <button 

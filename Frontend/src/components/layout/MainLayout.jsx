@@ -9,7 +9,7 @@ const MainLayout = () => {
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
 
-      {/* Sidebar: Truyền setCollapsed để xử lý hover */}
+      {/* Sidebar:  */}
       <AppSidebar
         collapsed={collapsed}
         setCollapsed={setCollapsed}
@@ -18,7 +18,7 @@ const MainLayout = () => {
       {/* Content bên phải */}
       <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
 
-        {/* Header: Không cần truyền props collapsed nữa vì đã xóa nút menu */}
+        {/* Header:  */}
         <AppHeader />
 
         {/* Nội dung chính */}
