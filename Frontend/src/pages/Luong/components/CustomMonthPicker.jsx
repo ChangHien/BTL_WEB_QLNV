@@ -38,7 +38,6 @@ const CustomMonthPicker = ({ value, onChange, placeholder = "Chọn tháng" }) =
 
   return (
     <div className="relative w-full" ref={wrapperRef}>
-      {/* Ô input hiển thị */}
       <div 
         onClick={() => setIsOpen(!isOpen)}
         className={`relative flex items-center w-full border rounded-lg bg-white transition-all h-10 cursor-pointer ${isOpen ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-300 hover:border-blue-400'}`}
@@ -60,10 +59,8 @@ const CustomMonthPicker = ({ value, onChange, placeholder = "Chọn tháng" }) =
         )}
       </div>
 
-      {/* Popup chọn tháng */}
       {isOpen && (
         <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-3 w-64 animate-in fade-in zoom-in-95 duration-100 right-0 sm:left-0">
-            {/* Header: Chọn năm */}
             <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
                 <button 
                     onClick={() => setViewYear(viewYear - 1)}
@@ -80,7 +77,6 @@ const CustomMonthPicker = ({ value, onChange, placeholder = "Chọn tháng" }) =
                 </button>
             </div>
 
-            {/* Grid 12 tháng */}
             <div className="grid grid-cols-3 gap-2">
                 {months.map((m, index) => {
                     const isSelected = value && value.month() === index && value.year() === viewYear;

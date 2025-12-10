@@ -1,11 +1,6 @@
 import axiosClient from "./axiosClient";
 
 const authApi = {
-  /**
-   * Login user
-   * @param {Object} payload { username, password }
-   * @returns {Promise<Object>} { token, user }
-   */
   login: async (payload) => {
     try {
       const response = await axiosClient.post("/auth/login", payload);
@@ -15,9 +10,6 @@ const authApi = {
     }
   },
 
-  /**
-   * Logout user (nếu backend có endpoint logout, optional)
-   */
   logout: async () => {
     try {
       const response = await axiosClient.post("/auth/logout");
@@ -27,9 +19,6 @@ const authApi = {
     }
   },
 
-  /**
-   * Refresh token (nếu backend hỗ trợ)
-   */
   refreshToken: async () => {
     try {
       const response = await axiosClient.post("/auth/refresh-token");

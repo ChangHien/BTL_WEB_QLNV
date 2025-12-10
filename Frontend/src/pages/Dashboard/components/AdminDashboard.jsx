@@ -90,7 +90,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="pb-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-      {/* Header Dashboard */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 mt-6 gap-4">
         <div>
             <h2 className="text-3xl font-bold text-gray-900 m-0">Dashboard Quản Trị</h2>
@@ -104,18 +103,13 @@ const AdminDashboard = () => {
         </button>
       </div>
 
-      {/* 1. Thống kê tổng quan (General Stats) */}
       <GeneralStats stats={stats} />
 
-      {/* 2. CẤU TRÚC BIỂU ĐỒ CHÍNH - */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6"> 
-        
-        {/* HÀNG 1: BIỂU ĐỒ LƯƠNG */}
         <div className="lg:col-span-5">
             <SalaryChart data={barData} />
         </div>
 
-        {/* HÀNG 2: NHÂN SỰ  + CHUYÊN CẦN  */}
         <div className="lg:col-span-3 h-full">
             <StructureChart data={pieData} />
         </div>
@@ -124,7 +118,6 @@ const AdminDashboard = () => {
             <AttendanceChart />
         </div>
 
-        {/*HÀNG 3: TUYỂN DỤNG  */}
         <div className="lg:col-span-5">
             <RecruitmentChart data={areaData} />
         </div>

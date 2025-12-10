@@ -85,7 +85,6 @@ const NhanVienPage = () => {
         />
       </div>
 
-      {/* BẢNG */}
       <div className="bg-white p-5 rounded-xl shadow overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>

@@ -6,7 +6,6 @@ const SalaryResult = ({ data }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg border-t-4 border-t-green-500 overflow-hidden mt-6 max-w-2xl mx-auto animate-enter">
-      {/* Header */}
       <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center gap-2">
         <div className="bg-green-100 p-2 rounded-full text-green-600">
             <DollarSign size={24} />
@@ -14,11 +13,8 @@ const SalaryResult = ({ data }) => {
         <h3 className="text-xl font-bold text-gray-800">PHIẾU LƯƠNG CHI TIẾT</h3>
       </div>
 
-      {/* Content */}
       <div className="p-6">
         <div className="space-y-4">
-            
-            {/* Row 1: Nhân viên */}
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium flex items-center gap-2">
                     <User size={16} /> Nhân Viên
@@ -28,7 +24,6 @@ const SalaryResult = ({ data }) => {
                 </span>
             </div>
 
-            {/* Row 2: Kỳ lương */}
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium flex items-center gap-2">
                     <Calendar size={16} /> Kỳ Lương
@@ -38,7 +33,6 @@ const SalaryResult = ({ data }) => {
                 </span>
             </div>
 
-            {/* Row 3: Giờ làm */}
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium flex items-center gap-2">
                     <Clock size={16} /> Tổng Giờ Làm
@@ -48,7 +42,6 @@ const SalaryResult = ({ data }) => {
                 </span>
             </div>
 
-            {/* Row 4: Lương cơ bản */}
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium">Lương Cơ Bản</span>
                 <span className="font-mono text-gray-700">
@@ -56,7 +49,6 @@ const SalaryResult = ({ data }) => {
                 </span>
             </div>
 
-            {/* Row 5: Lương OT */}
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium">Lương Làm Thêm (OT)</span>
                 <span className="font-mono text-gray-700">
@@ -64,7 +56,6 @@ const SalaryResult = ({ data }) => {
                 </span>
             </div>
 
-            {/* Total Row */}
             <div className="flex justify-between items-center pt-2 mt-4 bg-green-50 p-4 rounded-lg border border-green-100">
                 <span className="text-green-800 font-bold uppercase text-sm">Tổng Thực Nhận</span>
                 <span className="text-2xl font-extrabold text-red-600">

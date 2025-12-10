@@ -100,7 +100,6 @@ const TinhLuongPage = () => {
         onCalculate={handleCalculate} loading={calcLoading}
       />
 
-      {/* Chỉ hiện khi KHÔNG có kết quả (ketQua = null) và KHÔNG đang tính toán */}
       {!ketQua && !calcLoading && (
         <div className="max-w-7xl mx-auto border-2 border-dashed border-gray-300 rounded-lg h-64 flex flex-col items-center justify-center text-gray-400 bg-white shadow-sm">
             <div className="text-5xl mb-4 animate-bounce">👆</div>
@@ -110,7 +109,6 @@ const TinhLuongPage = () => {
         </div>
       )}
 
-      {/* RESULT TABLE  */}
       {Array.isArray(ketQua) && ketQua.length > 0 && (
         <div className="max-w-7xl mx-auto bg-white border border-gray-200 rounded-xl p-5 mb-8 shadow-sm">
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 font-bold text-gray-700 flex items-center gap-2">
@@ -146,7 +144,6 @@ const TinhLuongPage = () => {
         </div>
       )}
 
-      {/* RESULT TICKET (SINGLE) */}
       {ketQua && !Array.isArray(ketQua) && (
         <SalaryResult data={ketQua} />
       )}
