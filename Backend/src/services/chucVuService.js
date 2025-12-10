@@ -12,18 +12,18 @@ export const listChucVus = async () =>
 
 export const findChucVuByMa = async (maChucVu) =>
   db.ChucVu.findOne({
-    where: { ma_chuc_vu: normalizeCode(maChucVu) }, 
+    where: { ma_chuc_vu: normalizeCode(maChucVu) },
     raw: true,
   });
 
 export const createChucVu = async (payload = {}) => {
-  const maChucVu = normalizeCode(payload.ma_chuc_vu || ""); 
+  const maChucVu = normalizeCode(payload.ma_chuc_vu || "");
   const exists = await db.ChucVu.findOne({ where: { ma_chuc_vu: maChucVu }, raw: true });
   
   if (exists) return { error: "Mã chức vụ đã tồn tại", status: 409 };
   if (!isValidCode(maChucVu)) return { error: "Mã chức vụ phải đúng 1 ký tự", status: 400 };
 
-  const tenChucVu = normalizeString(payload.ten_chuc_vu || ""); 
+  const tenChucVu = normalizeString(payload.ten_chuc_vu || "");
   if (!maChucVu || !tenChucVu) return { error: "Thông tin không hợp lệ", status: 400 };
 
   const created = await db.ChucVu.create({

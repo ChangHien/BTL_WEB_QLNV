@@ -7,7 +7,6 @@ const ChamCong = db.ChamCong;
 const BangLuong = db.BangLuong;
 const NhanVien = db.NhanVien;
 
-//  TÍNH TỔNG GIỜ LÀM
 async function tongGioLam(ma_nhan_vien, thang, nam) {
     const startDate = moment([nam, thang - 1]).startOf('month').format('YYYY-MM-DD');
     const endDate = moment([nam, thang - 1]).endOf('month').format('YYYY-MM-DD');
@@ -33,7 +32,6 @@ async function tongGioLam(ma_nhan_vien, thang, nam) {
 
     return tongGio;
 }
-//  TÍNH LƯƠNG VÀ LƯU VÀO BẢNG
 export const tinhToanVaLuuBangLuong = async (ma_nhan_vien, thang, nam) => {
     const nhanVien = await NhanVien.findByPk(ma_nhan_vien);
     if (!nhanVien) throw new Error('Nhân viên không tồn tại.');
@@ -46,12 +44,11 @@ export const tinhToanVaLuuBangLuong = async (ma_nhan_vien, thang, nam) => {
     let gioLamThem = 0;
 
     const luongCoBanTheoGio = luongCoBanThang / GIO_LAM_CHUAN_THANG;
-    
     if (tong_gio_lam === 0) {
         tongLuong = 0;
     } 
     else if (tong_gio_lam < GIO_LAM_CHUAN_THANG) {
-        tongLuong = luongCoBanThang;
+        tongLuong = luongCoBanTheoGio * tong_gio_lam;
     } 
     else if (tong_gio_lam === GIO_LAM_CHUAN_THANG) {
         tongLuong = luongCoBanThang;
@@ -62,9 +59,6 @@ export const tinhToanVaLuuBangLuong = async (ma_nhan_vien, thang, nam) => {
         tongLuong = luongCoBanThang + luongThemGio;
     }
 
-   
-    // CẬP NHẬT/ TẠO MỚI LƯƠNG
-   
     const [bangLuong, created] = await BangLuong.findOrCreate({
         where: { ma_nhan_vien, thang, nam },
         defaults: {
@@ -87,7 +81,6 @@ export const tinhToanVaLuuBangLuong = async (ma_nhan_vien, thang, nam) => {
     return bangLuong;
 };
 
-//  THỐNG KÊ THU NHẬP NĂM
 export const getThongKeNam = async (ma_nhan_vien, nam, userRole, currentUserId) => {
     if (userRole === ROLES.NHAN_VIEN && ma_nhan_vien !== currentUserId) {
         return { error: 403, message: "Bạn không có quyền xem thống kê thu nhập của nhân viên khác." };

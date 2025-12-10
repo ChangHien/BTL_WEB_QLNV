@@ -1,41 +1,23 @@
 import express from 'express';
-import * as chamCongController from '../controllers/chamCongController.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-import roleMiddleware from '../middleware/roleMiddleware.js';
-import { ROLES } from '../config/constantConfig.js';
+import * as controller from '../controllers/chamCongController.js';
+import { verifyToken, isManager } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(authMiddleware);
 
-router.post(
-  '/check-in', 
-  roleMiddleware([ROLES.ADMIN, ROLES.HR, ROLES.NHAN_VIEN]),
-  chamCongController.checkIn
-);
+router.post('/check-in', verifyToken, controller.checkIn);
+router.put('/check-out', verifyToken, controller.checkOut);
 
-router.put(
-    '/check-out', 
-    roleMiddleware([ROLES.NHAN_VIEN, ROLES.ADMIN, ROLES.HR]),
-    chamCongController.checkOut
-);
 
-router.post(
-    '/full', 
-    roleMiddleware([ROLES.ADMIN, ROLES.HR]), 
-    chamCongController.createFullChamCong
-);
+router.get('/', verifyToken, isManager, controller.getDanhSach); 
 
-router.get(
-    '/summary', 
-    roleMiddleware([ROLES.ADMIN, ROLES.HR]), 
-    chamCongController.getAll
-);
 
-router.get(
-  '/:ma_nv', 
-  roleMiddleware([ROLES.ADMIN, ROLES.HR, ROLES.NHAN_VIEN]),
-  chamCongController.getHistory
-)
+router.put('/:id', verifyToken, isManager, controller.updateTrangThaiChuanCan);
+
+
+router.get('/:ma_nv', verifyToken, controller.getHistory);
+
+
+router.get('/summary', verifyToken, isManager, controller.getAll);
 
 export default router;

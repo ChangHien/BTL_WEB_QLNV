@@ -1,21 +1,33 @@
 import express from 'express';
 import * as nhanVienController from '../controllers/nhanVienController.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-import roleMiddleware from '../middleware/roleMiddleware.js';
+
+
+import { verifyToken } from '../middleware/authMiddleware.js'; 
+
+
+import roleMiddleware from '../middleware/roleMiddleware.js'; 
 import { ROLES } from '../config/constantConfig.js';
 
 const router = express.Router();
 
-router.use(authMiddleware);
-const adminHr = roleMiddleware([ROLES.ADMIN, ROLES.HR]);
-const allRoles = roleMiddleware([ROLES.ADMIN, ROLES.HR, ROLES.NHAN_VIEN]);
 
-router.post('/', adminHr, nhanVienController.create);
-router.get('/', adminHr, nhanVienController.findAll);
+router.use(verifyToken);
 
-// R - Read One (Admin/HR xem mọi người, NHAN_VIEN chỉ xem chính mình)
-router.get('/:ma_nv', allRoles, nhanVienController.findOne);
-router.put('/:ma_nv', adminHr, nhanVienController.update);
-router.delete('/:ma_nv', adminHr, nhanVienController.remove);
+
+const adminHrOnly = roleMiddleware([ROLES.ADMIN, ROLES.HR]);
+const allowAll = roleMiddleware([ROLES.ADMIN, ROLES.HR, ROLES.NHAN_VIEN]);
+
+
+router.post('/', adminHrOnly, nhanVienController.create);
+
+
+router.get('/', adminHrOnly, nhanVienController.findAll);
+
+
+router.get('/:ma_nv', allowAll, nhanVienController.findOne);
+
+
+router.put('/:ma_nv', adminHrOnly, nhanVienController.update);
+router.delete('/:ma_nv', adminHrOnly, nhanVienController.remove);
 
 export default router;

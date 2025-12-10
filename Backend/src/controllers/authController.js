@@ -6,8 +6,6 @@ import bcrypt from 'bcryptjs';
 
 const NhanVien = db.NhanVien;
 
-// POST /api/auth/login
-
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -42,8 +40,6 @@ export const login = async (req, res) => {
         res.status(500).send({ message: " Lỗi Server khi đăng nhập: " + error.message });
     }
 };
-
-// POST /api/auth/register (Tạo tài khoản)
 
 export const register = async (req, res) => {
     try {

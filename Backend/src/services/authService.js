@@ -5,7 +5,6 @@ import jwtConfig from '../config/jwtConfig.js';
 
 const TaiKhoan = db.TaiKhoan
 
-// Ham tao JWT Token
 export const generateToken = (payload) =>{
     return jwt.sign(
         payload,
@@ -16,7 +15,6 @@ export const generateToken = (payload) =>{
     )
 }
 
-//Ham xac thuc nguoi dung va ma hoa mat khau
 export const verifyUser = async (username, password) => {
     const user = await TaiKhoan.findOne ({where: {username}})
     if (!user) {
@@ -37,7 +35,6 @@ export const verifyUser = async (username, password) => {
         }
     }
 }
-//Ham tao tai khoan moi (chi Admin/HR)
 export const registerUser = async (username, password, ma_nhan_vien, role) => {
     const hashedPassword = bcrypt.hashSync (password, 10);
     const newAccount = await TaiKhoan.create ({
