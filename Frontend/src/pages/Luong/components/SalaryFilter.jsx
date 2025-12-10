@@ -78,7 +78,7 @@ const SearchableSelect = ({
   return (
     <div className="relative" ref={wrapperRef}>
       <div
-        className={`relative flex items-center w-full border-2 rounded-lg bg-white transition-all h-11 ${isOpen ? 'ring-2 ring-blue-500 border-blue-500 shadow-lg' : 'border-gray-200 hover:border-blue-400'}`}
+        className={`relative flex items-center w-full border rounded-lg bg-white transition-all h-11 ${isOpen ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-300 hover:border-blue-400'}`}
       >
         <div className="pl-3 text-gray-400">
           {Icon ? <Icon size={18} /> : <Search size={18} />}
@@ -106,9 +106,10 @@ const SearchableSelect = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border-2 border-blue-300 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 left-0">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 left-0">
           {filteredOptions.length > 0 ? (
             <ul className="py-1">
+              {/* Tùy chọn bỏ lọc */}
               <li
                 className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 cursor-pointer border-b border-gray-100 italic"
                 onClick={() => { onChange(undefined); setSearchTerm(''); setIsOpen(false); }}
@@ -124,7 +125,7 @@ const SearchableSelect = ({
                   <li
                     key={itemVal}
                     onClick={() => handleSelect(item)}
-                    className={`px-4 py-2 text-sm cursor-pointer flex justify-between items-center group transition-colors ${isSelected ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'}`}
+                    className={`px-4 py-2 text-sm cursor-pointer flex justify-between items-center group transition-colors ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'}`}
                   >
                     <div className="flex flex-col">
                       <span>{itemLabel}</span>
@@ -165,6 +166,7 @@ const SalaryFilter = ({
         </h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        {/* 1. Phòng ban */}
         <div className="col-span-1">
           <label className={labelClass}>Phòng ban</label>
           <SearchableSelect
@@ -179,6 +181,7 @@ const SalaryFilter = ({
         </div>
 
 
+        {/* 2. Chức vụ */}
         <div className="col-span-1">
           <label className={labelClass}>Chức vụ</label>
           <SearchableSelect
@@ -193,6 +196,7 @@ const SalaryFilter = ({
         </div>
 
 
+        {/* 3. Nhân viên */}
         <div className="col-span-1">
           <label className={labelClass}>Nhân viên</label>
           <SearchableSelect
@@ -207,6 +211,7 @@ const SalaryFilter = ({
         </div>
 
 
+        {/* 4. Kỳ lương */}
         <div className="col-span-1">
           <label className={labelClass}>Kỳ lương</label>
           <div className="h-11">
@@ -219,6 +224,7 @@ const SalaryFilter = ({
         </div>
 
 
+        {/* 5. Button */}
         <div className="col-span-1">
           <button
             onClick={onCalculate}

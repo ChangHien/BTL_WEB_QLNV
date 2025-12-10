@@ -75,9 +75,43 @@ const TinhLuongPage = () => {
           setKetQua(responseData.data);
           const msg = generateSuccessMessage(responseData.data.length); 
           alert(msg);
+          
+          // Tính tổng lương theo phòng ban từ kết quả tính lương
+          const salaryByDept = {};
+          responseData.data.forEach(item => {
+            // Tìm thông tin phòng ban của nhân viên
+            const nvInfo = filteredNhanVien.find(nv => nv.ma_nhan_vien === item.ma_nhan_vien);
+            const phongName = nvInfo?.phongBan?.ten_phong || 'Chưa phân bổ';
+            
+            if (!salaryByDept[phongName]) {
+              salaryByDept[phongName] = 0;
+            }
+            salaryByDept[phongName] += parseFloat(item.tong_luong || 0);
+          });
+
+          // Chuyển thành format biểu đồ
+          const barChartData = Object.keys(salaryByDept).map(key => ({
+            name: key,
+            quyLuong: salaryByDept[key]
+          }));
+
+          // Lưu vào sessionStorage để Dashboard hiển thị
+          sessionStorage.setItem('salaryChartData', JSON.stringify(barChartData));
+          console.log('💾 Lưu lương theo phòng ban:', barChartData);
       } else {
           alert(`Đã cập nhật lương cho nhân viên ${targetMaNV}`);
-          if (responseData.data) setKetQua(responseData.data); 
+          if (responseData.data) setKetQua(responseData.data);
+          
+          // Lưu kết quả vào sessionStorage
+          if (responseData.data) {
+            const nvInfo = listNhanVien.find(nv => nv.ma_nhan_vien === targetMaNV);
+            const phongName = nvInfo?.phongBan?.ten_phong || 'Chưa phân bổ';
+            const barChartData = [{
+              name: phongName,
+              quyLuong: parseFloat(responseData.data.tong_luong || 0)
+            }];
+            sessionStorage.setItem('salaryChartData', JSON.stringify(barChartData));
+          }
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Lỗi khi tính lương');
@@ -100,6 +134,7 @@ const TinhLuongPage = () => {
         onCalculate={handleCalculate} loading={calcLoading}
       />
 
+      {/* Chỉ hiện khi KHÔNG có kết quả (ketQua = null) và KHÔNG đang tính toán */}
       {!ketQua && !calcLoading && (
         <div className="max-w-7xl mx-auto border-2 border-dashed border-gray-300 rounded-lg h-64 flex flex-col items-center justify-center text-gray-400 bg-white shadow-sm">
             <div className="text-5xl mb-4 animate-bounce">👆</div>
@@ -109,6 +144,7 @@ const TinhLuongPage = () => {
         </div>
       )}
 
+      {/* RESULT TABLE  */}
       {Array.isArray(ketQua) && ketQua.length > 0 && (
         <div className="max-w-7xl mx-auto bg-white border border-gray-200 rounded-xl p-5 mb-8 shadow-sm">
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 font-bold text-gray-700 flex items-center gap-2">
@@ -144,6 +180,7 @@ const TinhLuongPage = () => {
         </div>
       )}
 
+      {/* RESULT TICKET (SINGLE) */}
       {ketQua && !Array.isArray(ketQua) && (
         <SalaryResult data={ketQua} />
       )}

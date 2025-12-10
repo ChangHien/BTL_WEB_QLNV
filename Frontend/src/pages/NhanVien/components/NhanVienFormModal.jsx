@@ -32,6 +32,7 @@ const NhanVienFormModal = ({
         </h2>
 
         <div className="grid grid-cols-2 gap-4">
+          {/* Tên NV */}
           <div className="col-span-2">
             <label className="font-medium mb-1 block">Tên NV</label>
             <input
@@ -41,6 +42,7 @@ const NhanVienFormModal = ({
             />
           </div>
 
+          {/* Phòng Ban */}
           <div>
             <label className="font-medium mb-1 block">Phòng Ban</label>
             <select
@@ -55,6 +57,7 @@ const NhanVienFormModal = ({
             </select>
           </div>
 
+          {/* Chức Vụ */}
           <div>
             <label className="font-medium mb-1 block">Chức Vụ</label>
             <select
@@ -69,6 +72,7 @@ const NhanVienFormModal = ({
             </select>
           </div>
 
+          {/* Lương */}
           <div className="col-span-2">
             <label className="font-medium mb-1 block">Mức lương</label>
             <input
@@ -79,6 +83,7 @@ const NhanVienFormModal = ({
             />
           </div>
 
+          {/* Ngày vào làm */}
           <div className="col-span-2">
             <label className="font-medium mb-1 block">Ngày vào làm</label>
             <input
@@ -89,6 +94,7 @@ const NhanVienFormModal = ({
             />
           </div>
 
+          {/* Trạng thái */}
           <div className="col-span-2">
             <label className="font-medium mb-1 block">Trạng Thái</label>
             <select
@@ -102,6 +108,7 @@ const NhanVienFormModal = ({
           </div>
         </div>
 
+        {/* Buttons */}
         <div className="text-right mt-6 space-x-3">
           <button className="px-4 py-2 bg-gray-300 rounded-lg" onClick={onCancel}>
             Hủy

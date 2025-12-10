@@ -1,11 +1,33 @@
 import React from 'react';
-import { Eye } from 'react-feather';
+import { Eye, TrendingUp } from 'react-feather';
+import { useNavigate } from 'react-router-dom';
 
 const SalarySummary = ({ data, year, onViewDetail }) => {
+  const navigate = useNavigate();
+
+  const handleSendToDashboard = () => {
+    if (data.length === 0) {
+      alert('Chưa có dữ liệu để gửi');
+      return;
+    }
+
+    // Chỉ navigate về Dashboard, Dashboard sẽ tự động tính lương từ chấm công
+    alert('✅ Đang chuyển về Dashboard để hiển thị lương theo phòng ban...');
+    navigate('/');
+  };
+
   return (
     <div className="animate-enter">
-      <div className="mb-4 font-bold text-gray-700 text-lg border-l-4 border-primary pl-3">
-        Kết quả tổng hợp: <span className="text-primary">{data.length}</span> nhân viên (Năm {year})
+      <div className="mb-4 flex justify-between items-center">
+        <div className="font-bold text-gray-700 text-lg border-l-4 border-primary pl-3">
+          Kết quả tổng hợp: <span className="text-primary">{data.length}</span> nhân viên (Năm {year})
+        </div>
+        <button
+          onClick={handleSendToDashboard}
+          className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold flex items-center gap-2"
+        >
+          <TrendingUp size={18} /> Gửi kết quả lên Dashboard
+        </button>
       </div>
       
       <div className="bg-white rounded-lg shadow-card overflow-hidden border border-gray-200">

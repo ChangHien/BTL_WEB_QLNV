@@ -15,6 +15,7 @@ const AppRoutes = () => (
       <Route path="/" element={<DashboardPage />} />
       <Route path="/cham-cong" element={<ChamCongPage />} />
       <Route path="/danh-sach-cham-cong" element={<DanhSachChamCongPage />} />
+      {/* Thêm các route khác */}
     </Route>
     <Route path="*" element={<NotFoundPage />} />
   </Routes>
