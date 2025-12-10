@@ -1,11 +1,12 @@
 import * as chamCongService from '../services/chamCongService.js';
 import moment from 'moment';
-import { ROLES } from '../config/constantConfig.js';
+import { ROLES } from '../config/constantConfig.js'; // Đảm bảo import ROLES
 
 export const checkIn = async (req, res) => {
     let { ma_nhan_vien } = req.body;
-    const { userRole, userId } = req;
+    const { userRole, userId } = req; // Lấy từ Middleware xác thực (authMiddleware)
 
+    // NẾU LÀ NHÂN VIÊN: Ép buộc ma_nhan_vien phải là ID của chính họ
     if (userRole === ROLES.NHAN_VIEN) {
         ma_nhan_vien = userId;
     }
@@ -41,10 +42,14 @@ export const checkIn = async (req, res) => {
     }
 };
 
+/* ==========================
+ *  CHECK-OUT (BẢO MẬT TƯƠNG TỰ)
+ * ========================== */
 export const checkOut = async (req, res) => {
     let { ma_nhan_vien } = req.body;
     const { userRole, userId } = req;
 
+    // NẾU LÀ NHÂN VIÊN: Ép buộc ID
     if (userRole === ROLES.NHAN_VIEN) {
         ma_nhan_vien = userId;
     }
@@ -73,11 +78,16 @@ export const checkOut = async (req, res) => {
     }
 };
 
+/* ==========================
+ *  LẤY DANH SÁCH (CHO QUẢN LÝ - CÓ FILTER)
+ *  Hàm này đang thiếu trong code cũ của bạn
+ * ========================== */
 export const getDanhSach = async (req, res) => {
     try {
+        // Lấy các tham số từ query string (Frontend gửi lên)
         const filters = {
             ma_phong: req.query.ma_phong,
-            ngay: req.query.ngay,
+            ngay: req.query.ngay,          // YYYY-MM-DD
             thang: req.query.thang,
             nam: req.query.nam,
             trang_thai_ca: req.query.trang_thai_ca

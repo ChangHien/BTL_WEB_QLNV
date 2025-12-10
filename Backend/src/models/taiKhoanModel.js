@@ -2,7 +2,8 @@ const TaiKhoanModel = (sequelize, DataTypes) => {
   const TaiKhoan = sequelize.define('TaiKhoan', {
     username: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
+      unique: true
     },
     password: {
       type: DataTypes.STRING(100),
@@ -11,6 +12,7 @@ const TaiKhoanModel = (sequelize, DataTypes) => {
     ma_nhan_vien: {
       type: DataTypes.STRING(10),
       allowNull: false,
+      unique: true,
       references: {
         model: 'NhanVien', // Tên bảng NhanVien
         key: 'ma_nhan_vien'
@@ -23,11 +25,7 @@ const TaiKhoanModel = (sequelize, DataTypes) => {
   }, {
     tableName: 'TaiKhoan',
     timestamps: false,
-    id: false,
-    indexes: [
-      { unique: true, fields: ['username'] },
-      { unique: true, fields: ['ma_nhan_vien'] }
-    ]
+    id: false
   });
   return TaiKhoan;
 };

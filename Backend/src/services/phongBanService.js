@@ -2,9 +2,11 @@ import db from "../models/index.js";
 
 const ALLOWED_STATUS = ["HoatDong", "NgungHoatDong"];
 
+// Chuẩn hóa mã: trim & đổi sang uppercase để ghi thống nhất
 const normalizeCode = (value) =>
   typeof value === "string" ? value.trim().toUpperCase() : "";
 
+// Chuẩn hóa chuỗi thông thường (giữ nguyên hoa/thường)
 const normalizeString = (value) =>
   typeof value === "string" ? value.trim() : value;
 
@@ -16,6 +18,7 @@ const normalizeYear = (value) => {
   return Number.isNaN(year) ? null : year;
 };
 
+// mã phòng phải đúng 3 ký tự chữ hoặc số
 const isValidPhongCode = (value) => /^[A-Za-z0-9]{3}$/.test(value || "");
 
 const isValidStatus = (value) => ALLOWED_STATUS.includes(value);

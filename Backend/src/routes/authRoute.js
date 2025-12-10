@@ -9,10 +9,10 @@ const router = express.Router();
 router.post('/login', authController.login);
 
 // Route đăng ký (Tạo tài khoản mới)
-
+// Cần verifyToken trước, sau đó mới check quyền
 router.post(
     '/register', 
-    verifyToken, 
+    verifyToken, // SỬA LỖI: Thay authMiddleware bằng verifyToken
     roleMiddleware([ROLES.ADMIN, ROLES.HR]), 
     authController.register
 );

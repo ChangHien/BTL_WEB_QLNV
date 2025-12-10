@@ -1,5 +1,6 @@
 import * as nhanVienService from '../services/nhanVienService.js';
 
+// ------------------- C (Create) -------------------
 export const create = async (req, res) => {
   try {
     const newNhanVien = await nhanVienService.createNhanVien(req.body);
@@ -9,6 +10,7 @@ export const create = async (req, res) => {
   }
 };
 
+// ------------------- R (Read All) -------------------
 export const findAll = async (req, res) => {
     try {
         const nhanViens = await nhanVienService.getAllNhanVien();
@@ -18,6 +20,7 @@ export const findAll = async (req, res) => {
     }
 };
 
+// ------------------- R (Read One) -------------------
 export const findOne = async (req, res) => {
     try {
         const ma_nhan_vien = req.params.ma_nv;
@@ -32,6 +35,7 @@ export const findOne = async (req, res) => {
     }
 };
 
+// ------------------- U (Update) -------------------
 export const update = async (req, res) => {
     try {
         const ma_nhan_vien = req.params.ma_nv;
@@ -42,29 +46,13 @@ export const update = async (req, res) => {
                 message: `Không tìm thấy hoặc không có thay đổi cho nhân viên mã ${ma_nhan_vien}.` 
             });
         }
-
-        // Nếu có thay đổi phòng ban hoặc chức vụ, lấy mã nhân viên mới
-        if (req.body.ma_phong || req.body.ma_chuc_vu) {
-            const nhanVienCapNhat = await nhanVienService.getNhanVienById(ma_nhan_vien);
-            const nhanVienMoi = nhanVienCapNhat || await nhanVienService.getNhanVienById(
-                await nhanVienService.generateMaNhanVien(
-                    req.body.ma_phong || (await nhanVienService.getNhanVienById(ma_nhan_vien)).ma_phong,
-                    req.body.ma_chuc_vu || (await nhanVienService.getNhanVienById(ma_nhan_vien)).ma_chuc_vu
-                )
-            );
-            
-            return res.status(200).send({ 
-                message: "Cập nhật nhân viên thành công.",
-                data: nhanVienMoi
-            });
-        }
-
         res.status(200).send({ message: "Cập nhật nhân viên thành công." });
     } catch (error) {
         res.status(500).send({ message: "Lỗi khi cập nhật nhân viên: " + error.message });
     }
 };
 
+// ------------------- D (Delete) -------------------
 export const remove = async (req, res) => {
     try {
         const ma_nhan_vien = req.params.ma_nv;

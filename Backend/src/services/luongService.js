@@ -7,6 +7,7 @@ const ChamCong = db.ChamCong;
 const BangLuong = db.BangLuong;
 const NhanVien = db.NhanVien;
 
+//  TÍNH TỔNG GIỜ LÀM
 async function tongGioLam(ma_nhan_vien, thang, nam) {
     const startDate = moment([nam, thang - 1]).startOf('month').format('YYYY-MM-DD');
     const endDate = moment([nam, thang - 1]).endOf('month').format('YYYY-MM-DD');
@@ -32,6 +33,7 @@ async function tongGioLam(ma_nhan_vien, thang, nam) {
 
     return tongGio;
 }
+//  TÍNH LƯƠNG VÀ LƯU VÀO BẢNG
 export const tinhToanVaLuuBangLuong = async (ma_nhan_vien, thang, nam) => {
     const nhanVien = await NhanVien.findByPk(ma_nhan_vien);
     if (!nhanVien) throw new Error('Nhân viên không tồn tại.');
@@ -59,6 +61,9 @@ export const tinhToanVaLuuBangLuong = async (ma_nhan_vien, thang, nam) => {
         tongLuong = luongCoBanThang + luongThemGio;
     }
 
+   
+    // CẬP NHẬT/ TẠO MỚI LƯƠNG
+   
     const [bangLuong, created] = await BangLuong.findOrCreate({
         where: { ma_nhan_vien, thang, nam },
         defaults: {
@@ -81,6 +86,7 @@ export const tinhToanVaLuuBangLuong = async (ma_nhan_vien, thang, nam) => {
     return bangLuong;
 };
 
+//  THỐNG KÊ THU NHẬP NĂM
 export const getThongKeNam = async (ma_nhan_vien, nam, userRole, currentUserId) => {
     if (userRole === ROLES.NHAN_VIEN && ma_nhan_vien !== currentUserId) {
         return { error: 403, message: "Bạn không có quyền xem thống kê thu nhập của nhân viên khác." };
@@ -99,4 +105,123 @@ export const getThongKeNam = async (ma_nhan_vien, nam, userRole, currentUserId) 
         tong_thu_nhap_nam: tongThuNhapNam.toFixed(2),
         chi_tiet_theo_thang: thongKe
     };
+};
+
+// THỐNG KÊ LƯƠNG THỰC TẾ THEO PHÒNG BAN
+export const getThongKeLuongTheoPhongBan = async (thang, nam) => {
+    try {
+        const bangLuongList = await BangLuong.findAll({
+            where: { thang, nam },
+            attributes: ['ma_nhan_vien', 'tong_luong'],
+            include: [{
+                model: NhanVien,
+                as: 'nhanVien',
+                attributes: ['ma_nhan_vien'],
+                include: [{
+                    model: db.PhongBan,
+                    as: 'phongBan',
+                    attributes: ['ma_phong', 'ten_phong']
+                }]
+            }],
+            raw: false
+        });
+
+        // Nhóm theo phòng ban
+        const deptStats = {};
+        bangLuongList.forEach(bl => {
+            const tenPhong = bl.nhanVien?.phongBan?.ten_phong || 'Chưa phân bổ';
+            const tongLuong = parseFloat(bl.tong_luong || 0);
+
+            if (!deptStats[tenPhong]) {
+                deptStats[tenPhong] = 0;
+            }
+            deptStats[tenPhong] += tongLuong;
+        });
+
+        // Chuyển thành mảng
+        const result = Object.keys(deptStats).map(key => ({
+            name: key,
+            tong_luong_thuc_te: deptStats[key].toFixed(2)
+        }));
+
+        return result;
+    } catch (error) {
+        console.error('Lỗi tính thống kê lương:', error);
+        throw error;
+    }
+};
+
+// TỰ ĐỘNG TÍNH LƯƠNG THEO PHÒNG BAN DỰA VÀO CHẤM CÔNG
+export const tinhTongLuongTheoPhongBan = async (thang, nam) => {
+    try {
+        // Lấy tất cả nhân viên (không giới hạn trạng thái)
+        const nhanVienList = await NhanVien.findAll({
+            attributes: ['ma_nhan_vien', 'muc_luong_co_ban'],
+            include: [{
+                model: db.PhongBan,
+                as: 'phongBan',
+                attributes: ['ten_phong']
+            }],
+            raw: false
+        });
+
+        console.log(`📋 Tìm thấy ${nhanVienList.length} nhân viên để tính lương`);
+
+        if (nhanVienList.length === 0) {
+            return [];
+        }
+
+        // Tính lương cho từng nhân viên dựa vào chấm công
+        const salaryByDept = {};
+
+        for (const nv of nhanVienList) {
+            try {
+                // Tính giờ làm dựa vào ChamCong
+                const tong_gio_lam = await tongGioLam(nv.ma_nhan_vien, thang, nam);
+                console.log(`⏰ NV ${nv.ma_nhan_vien}: ${tong_gio_lam} giờ, lương cơ bản: ${nv.muc_luong_co_ban}`);
+                
+                const luongCoBanThang = parseFloat(nv.muc_luong_co_ban);
+                let luongThemGio = 0;
+                let tongLuong = 0;
+
+                const luongCoBanTheoGio = luongCoBanThang / GIO_LAM_CHUAN_THANG;
+                
+                if (tong_gio_lam === 0) {
+                    tongLuong = 0;
+                } else if (tong_gio_lam < GIO_LAM_CHUAN_THANG) {
+                    tongLuong = luongCoBanTheoGio * tong_gio_lam;
+                } else if (tong_gio_lam === GIO_LAM_CHUAN_THANG) {
+                    tongLuong = luongCoBanThang;
+                } else {
+                    const gioLamThem = tong_gio_lam - GIO_LAM_CHUAN_THANG;
+                    luongThemGio = gioLamThem * luongCoBanTheoGio * HE_SO_LAM_THEM_GIO;
+                    tongLuong = luongCoBanThang + luongThemGio;
+                }
+
+                const tenPhong = nv.phongBan?.ten_phong || 'Chưa phân bổ';
+                console.log(`💰 NV ${nv.ma_nhan_vien}: Lương = ${tongLuong}, Phòng = ${tenPhong}`);
+
+                // Nhóm tổng lương theo phòng ban
+                if (!salaryByDept[tenPhong]) {
+                    salaryByDept[tenPhong] = 0;
+                }
+                salaryByDept[tenPhong] += tongLuong;
+
+            } catch (error) {
+                console.warn(`⚠️ Lỗi tính lương NV ${nv.ma_nhan_vien}:`, error.message);
+            }
+        }
+
+        // Chuyển thành mảng
+        const result = Object.keys(salaryByDept).map(key => ({
+            name: key,
+            tong_luong_thuc_te: salaryByDept[key].toFixed(2)
+        }));
+
+        console.log(`✅ Kết quả lương theo phòng ban:`, result);
+        return result;
+    } catch (error) {
+        console.error('❌ Lỗi tính tổng lương theo phòng ban:', error);
+        throw error;
+    }
 };
